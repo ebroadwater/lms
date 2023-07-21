@@ -42,7 +42,7 @@
 		<?php require_once "head.php";?>
 	</header>
 	<body>
-		<h1 style="text-align:left; margin-left: 100px;">Log In</h1>
+		<h1 class="login-form">Log In</h1>
 		<?php 
 			flashMessages();
 		?>
