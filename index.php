@@ -1,6 +1,7 @@
 <?php 
 	session_start();
 	require_once "pdo.php";
+	require_once "util.php";
 ?>
 <!DOCTYPE html>
 <html>
@@ -26,6 +27,9 @@
 			</li>
 		</ul>
 		<h1>LMS Homepage</h1>
+		<?php 
+			flashMessages();
+		?>
 		<form method="GET">
 			<div class="search-bar">
 				<label for="type-text">Type:</label>
@@ -40,5 +44,33 @@
 				<input type="submit" name="search" class="button" value="Search">
 			</div>	
 		</form>
+		<?php 
+			$staff = isset($_SESSION['is_staff']);
+			if ($staff){
+				echo("<div class='admin-view'>");
+				echo("<div class='admin-view-row'>");
+				echo("<h4>Today's Transactions</h4>");
+				echo("</div>");
+				echo("<div class='admin-view-row'>");
+				echo("<h4>All Transactions</h4>");
+				echo("</div>");
+				echo("<div class='admin-view-row'>");
+				echo("<h4>Overdue Books</h4>");
+				echo("</div>");
+				echo("<div class='admin-view-row'>");
+				echo("<h4>All Members</h4>");
+				echo("</div>");
+				echo("</div>");
+			}
+			else{
+				echo("<h4>Explore favorite titles!</h4>");
+				echo("<div class='home-view-row'>");
+				echo("<img src='static/images/100yrs.png' width='170' height='250'/>");
+				echo("<img src='static/images/lexicon.png' width='170' height='250'/>");
+				echo("<img src='static/images/percy_jackson.png' width='170' height='250'/>");
+				echo("<img src='static/images/the_power.png' width='170' height='250'/>");
+				echo("</div>");
+			}
+		?>
 	</body>
 </html>
