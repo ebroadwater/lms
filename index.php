@@ -28,7 +28,7 @@
 		</ul>
 		<h1>LMS Homepage</h1>
 		<?php 
-			flashMessages();
+			flashMessagesCenter();
 		?>
 		<form method="GET">
 			<div class="search-bar">
