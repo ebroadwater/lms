@@ -2,21 +2,25 @@
 	session_start();
 	require_once "pdo.php";
 	require_once "util.php";
+
+	$staff = isset($_SESSION['is_staff']);
+	$loggedin = isset($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html>
 	<header>
 		<title>Emma's LMS Homepage</title>
-		<!-- <link rel='stylesheet' href='starter.css'> -->
 		<?php require_once "head.php";?>
 	</header>
 	<body>
 		<ul class="nav">
 			<li class="nav-link">
 			<?php 
-				$loggedin = isset($_SESSION['user_id']);
-
 				if ($loggedin){
+					if ($staff){
+						echo('<a href="add.php">Add Books</a>');
+						echo('<a href="member_edit.php">Edit Members</a>');
+					}
 					echo('<a href="logout.php">Log Out</a>');
 				}
 				else{
@@ -45,25 +49,27 @@
 			</div>	
 		</form>
 		<?php 
-			$staff = isset($_SESSION['is_staff']);
 			if ($staff){
 				echo("<div class='admin-view'>");
-				echo("<div class='admin-view-row'>");
 				echo("<h4>Today's Transactions</h4>");
-				echo("</div>");
 				echo("<div class='admin-view-row'>");
+				echo("</div>");
 				echo("<h4>All Transactions</h4>");
-				echo("</div>");
 				echo("<div class='admin-view-row'>");
+				echo("</div>");
 				echo("<h4>Overdue Books</h4>");
-				echo("</div>");
 				echo("<div class='admin-view-row'>");
-				echo("<h4>All Members</h4>");
 				echo("</div>");
+				// echo("<h4>Edit Members</h4>");
+				// echo("<div class='admin-view-row'>");
+				// echo("</div>");
+				// echo("<h4>Edit Catalog</h4>");
+				// echo("<div class='admin-view-row'>");
+				// echo("</div>");
 				echo("</div>");
 			}
 			else{
-				echo("<h4>Explore favorite titles!</h4>");
+				echo("<h4>Explore favorites titles!</h4>");
 				echo("<div class='home-view-row'>");
 				echo("<img src='static/images/100yrs.png' width='170' height='250'/>");
 				echo("<img src='static/images/lexicon.png' width='170' height='250'/>");

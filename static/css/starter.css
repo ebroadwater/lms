@@ -18,6 +18,7 @@ body{
 }
 .nav-link a{
 	text-decoration: none;
+	margin-left:20px;
 }
 .login-page{
 	margin-left: 100px;
@@ -54,7 +55,7 @@ body{
 	display: flex;
 	flex-direction: column;
 	border: solid 1px black;
-
+	/* justify-content: center; */
 }
 .admin-view-row{
 	display: flex;
@@ -74,4 +75,16 @@ body{
 }
 .loginput{
 	margin-bottom: 20px;
+}
+.plus{
+	background-color: green;
+	color: white;
+	border-radius: 5px;
+	border: none;
+}
+.minus{
+	background-color: red;
+	color: white;
+	border-radius: 5px;
+	border: none;
 }
