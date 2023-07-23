@@ -1,7 +1,7 @@
 <?php 
 	session_start();
-	require_once "../pdo.php";
-	require_once "../util.php";
+	require_once "pdo.php";
+	require_once "util.php";
 
 	$profile = false;
 	$staff = false;
@@ -33,20 +33,20 @@
 	if ($row === false){
 		$_SESSION['error'] = "Could not load profile";
 		if ($staff){
-			header("Location: ../members.php");
+			header("Location: members.php");
 			return;
 		}
 		if ($profile){
-			header("Location: ../index.php");
+			header("Location: index.php");
 			return;
 		}
 	}
 	if (isset($_POST['cancel'])){
 		if ($staff){
-			header("Location: ../members.php");
+			header("Location: members.php");
 			return;
 		}
-		header("Location: ../index.php");
+		header("Location: index.php");
 		return;
 	}
 	if (isset($_POST['save']) && isset($_REQUEST['user_id'])){
@@ -71,7 +71,7 @@
 		if (isset($_POST['password']) && strlen($_POST['password']) > 0){
 			if (!isset($_POST['confirm-password']) || strlen($_POST['confirm-password']) < 1){
 				$_SESSION['error'] = "Must confirm password";
-				header("Location: edit.php");
+				header("Location: members-edit.php");
 				return;
 			}
 		}
@@ -79,10 +79,10 @@
 			if ($_POST['password'] !== $_POST['confirm-password']){
 				$_SESSION['error'] = "Passwords do not match";
 				if ($staff){
-					header("Location: edit.php");
+					header("Location: members-edit.php");
 					return;
 				}
-				header("Location: edit.php");
+				header("Location: members-edit.php");
 				return;
 			}
 			$salt = 'XyZzy12*_';
@@ -95,10 +95,10 @@
 		}
 		$_SESSION['success'] = "Profile updated";
 		if ($staff){
-			header("Location: ../members.php");
+			header("Location: members.php");
 			return;
 		}
-		header("Location: ../index.php");
+		header("Location: index.php");
 		return;
 	}
 ?>
@@ -106,12 +106,22 @@
 <html>
 	<head>
 		<title>Edit Profile</title>
-		<?php require_once "../head.php";?>
-		<link rel='stylesheet' href='../static/css/starter.css'>
+		<?php require_once "head.php";?>
 	</head>
 	<body>
+		<ul class="nav">
+			<li class="nav-link">
+			<?php 
+				echo('<a href="index.php">Home</a>');
+				echo('<a href="add.php">Add Book</a>');
+				echo('<a href="member-add.php">Add Member</a>');
+				echo('<a href="members.php">Members</a>');
+				echo('<a href="logout.php">Log Out</a>');
+			?>
+			</li>
+		</ul>
 		<?php 
-			echo("<h1>Editing Profile for ".htmlentities($_SESSION['first_name'])." ".htmlentities($_SESSION['last_name'])."</h1>");
+			echo("<h1 class='login-form'>Editing Profile for ".htmlentities($_SESSION['first_name'])." ".htmlentities($_SESSION['last_name'])."</h1>");
 			flashMessages();
 		?>
 		<form method="POST">

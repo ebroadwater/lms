@@ -48,6 +48,17 @@
 		<link rel='stylesheet' href='static/css/starter.css'>
 	</head>
 	<body>
+		<ul class="nav">
+			<li class="nav-link">
+			<?php 
+				echo('<a href="index.php">Home</a>');
+				echo('<a href="add.php">Add Book</a>');
+				echo('<a href="member-add.php">Add Member</a>');
+				echo('<a href="members.php">Members</a>');
+				echo('<a href="logout.php">Log Out</a>');
+			?>
+			</li>
+		</ul>
 		<h1 class="login-form">Add New Book</h1>
 		<?php 
 			flashMessages();
