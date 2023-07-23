@@ -37,10 +37,11 @@
 ?>
 <!DOCTYPE html>
 <html>
-	<header>
+	<head>
 		<title>LMS Login Page</title>
 		<?php require_once "head.php";?>
-	</header>
+		<link rel='stylesheet' href='static/css/starter.css'>
+	</head>
 	<body>
 		<h1 class="login-form">Log In</h1>
 		<?php 
