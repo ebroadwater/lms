@@ -42,10 +42,11 @@
 ?>
 <!DOCTYPE html>
 <html>
-	<header>
+	<head>
 		<title>Add New Book</title>
 		<?php require_once "head.php";?>
-	</header>
+		<link rel='stylesheet' href='static/css/starter.css'>
+	</head>
 	<body>
 		<h1 class="login-form">Add New Book</h1>
 		<?php 

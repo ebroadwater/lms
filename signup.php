@@ -48,6 +48,7 @@
 	<header>
 		<title>LMS Sign Up</title>
 		<?php require_once "head.php";?>
+		<link rel='stylesheet' href='static/css/starter.css'>
 	</header>
 	<body>
 		<h1 class="login-form">Sign Up</h1>

@@ -8,18 +8,20 @@
 ?>
 <!DOCTYPE html>
 <html>
-	<header>
+	<head>
 		<title>Emma's LMS Homepage</title>
 		<?php require_once "head.php";?>
-	</header>
+		<link rel='stylesheet' href='static/css/starter.css'>
+	</head>
 	<body>
 		<ul class="nav">
 			<li class="nav-link">
 			<?php 
+				echo('<a href="index.php">Home</a>');
 				if ($loggedin){
 					if ($staff){
-						echo('<a href="add.php">Add Books</a>');
-						echo('<a href="member_edit.php">Edit Members</a>');
+						echo('<a href="add.php">Add Book</a>');
+						echo('<a href="members.php">Members</a>');
 					}
 					echo('<a href="logout.php">Log Out</a>');
 				}
