@@ -18,7 +18,6 @@
 	<head>
 		<title>LMS Members</title>
 		<?php require_once "head.php";?>
-		<link rel='stylesheet' href='static/css/starter.css'>
 	</head>
 	<body>
 		<ul class="nav">
@@ -26,6 +25,7 @@
 			<?php 
 				echo('<a href="index.php">Home</a>');
 				echo('<a href="add.php">Add Book</a>');
+				echo('<a href="member-add.php">Add Member</a>');
 				echo('<a href="members.php">Members</a>');
 				echo('<a href="logout.php">Log Out</a>');
 			?>
@@ -42,7 +42,7 @@
 				echo("<tr><th>Name</th>");
 				echo("<th>Email</th>");
 				echo("<th>Role</th>");
-				echo("<th>Action</th></tr>");
+				echo("<th>Actions</th></tr>");
 				foreach($members as $mem){
 					echo("<td>".htmlentities($mem['first_name'])." ".htmlentities($mem['last_name']).'</a> ');
 					echo("</td><td>".htmlentities($mem['email']));
@@ -56,8 +56,11 @@
 						$role = "Member";
 					}
 					echo($role."</td><td>");
-					echo('<a href="members/edit.php?user_id='.$mem['user_id'].'">Edit</a>  |   ');
-					echo('<a href="members/delete.php?user_id='.$mem['user_id'].'">Delete</a>');
+					echo("<div class='actions'>");
+					echo('<a href="members-edit.php?user_id='.$mem['user_id'].'" class="edit-button">Edit</a>');
+					echo(' | ');
+					echo('<form><input type="button" name="delete" class="delete-button" id="del-btn" value="Delete" onclick="deleteAlert('.$mem['user_id'].')"></form>');
+					echo("</div>");
 					echo("</td></tr>");
 				}
 				echo("</table>\n");
@@ -68,5 +71,14 @@
 				echo("<p>No Members Found</p>");
 			}
 		?>
+		<script>
+			function deleteAlert(user_id){
+				if (confirm("Are you sure you want to delete this member?")){
+					const xmlhttp = new XMLHttpRequest();
+					xmlhttp.open("POST", "member-delete.php?user_id=" + user_id);
+					xmlhttp.send();
+				}
+			}
+		</script>
 	</body>
 </html>

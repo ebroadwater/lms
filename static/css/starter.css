@@ -94,15 +94,51 @@ a{
 a:hover{
 	text-decoration: underline;
 }
+.member-page{
+	display: flex;
+	justify-content: center;
+}
 table {
 	border-collapse: collapse;
 	width: 100%;
 	/* border: solid 1px black; */
+	/* table-layout: fixed; */
+	justify-content: space-evenly;
+	margin-left:20px;
+	margin-right:20px;
 }
 th, td {
 	padding: 8px;
 	text-align: left;
-	/* border: solid 1px black; */
 	border-bottom: 1px solid #ddd;
 }
-tr:hover {background-color: #008000;}
+tr:hover {background-color: lightblue;}
+
+.delete-button{
+	border: none;
+	border-radius: 5px;
+	color: red;
+}
+.delete-button:hover, .edit-button:hover{
+	background-color:darkgray;
+}
+.edit-button{
+	color:green;
+	text-decoration: none;
+	background-color: hsl(0, 0%, 94%);
+	text-align: center;
+	border: none;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-left:6px;
+	padding-right: 6px;
+	border-radius: 5px;
+	font-size: 0.83em;
+}
+.edit-button:link{
+	text-decoration: none;
+}
+.actions{
+	display: flex;
+	gap: 20px;
+}
