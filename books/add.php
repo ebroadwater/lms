@@ -1,15 +1,15 @@
 <?php 
 	session_start();
-	require_once "pdo.php";
-	require_once "util.php";
+	require_once "../pdo.php";
+	require_once "../util.php";
 
 	if (!isset($_SESSION['user_id']) || $_SESSION['is_staff'] === false){
 		die("ACCESS DENIED");
-		header("Location: index.php");
+		header("Location: ../index.php");
 		return;
 	}
 	if (isset($_POST['cancel'])){
-		header("Location: index.php");
+		header("Location: ../index.php");
 		return;
 	}
 	if (isset($_POST['add']) && isset($_POST['title']) && isset($_POST['publisher']) && isset($_POST['yr_published']) 
@@ -35,7 +35,7 @@
 			insertBook($pdo);
 
 			$_SESSION['success'] = "Book added"; 
-			header("Location: index.php");
+			header("Location: ../index.php");
 			return;
 	}
 
@@ -44,18 +44,18 @@
 <html>
 	<head>
 		<title>Add New Book</title>
-		<?php require_once "head.php";?>
-		<link rel='stylesheet' href='static/css/starter.css'>
+		<?php require_once "../head.php";?>
+		<link rel='stylesheet' href='../static/css/starter.css'>
 	</head>
 	<body>
 		<ul class="nav">
 			<li class="nav-link">
 			<?php 
-				echo('<a href="index.php">Home</a>');
+				echo('<a href="../index.php">Home</a>');
 				echo('<a href="add.php">Add Book</a>');
-				echo('<a href="member-add.php">Add Member</a>');
-				echo('<a href="members.php">Members</a>');
-				echo('<a href="logout.php">Log Out</a>');
+				echo('<a href="../members/member-add.php">Add Member</a>');
+				echo('<a href="../members.php">Members</a>');
+				echo('<a href="../logout.php">Log Out</a>');
 			?>
 			</li>
 		</ul>
@@ -73,8 +73,6 @@
 							<p>
 								First Name:
 								<input type="text" name="author_fname1" value=""/>
-								Middle Name (optional): 
-								<input type="text" name="author_mname1" value=""/>
 								Last Name: 
 								<input type="text" name="author_lname1" value=""/>
 							</p>
@@ -135,16 +133,16 @@
 					$('#genre_fields').append(source.replace(/@COUNT@/g, countGenre));
 
 					$('.genre').autocomplete({
-						source: "genre.php"
+						source: "../genre.php"
 					});
 				});
 
 				$('.genre').autocomplete({
-					source: "genre.php"
+					source: "../genre.php"
 				});
 
 				$('.pub').autocomplete({
-					source: "publisher.php"
+					source: "../publisher.php"
 				});
 			});
 		</script>
@@ -153,8 +151,6 @@
 				<p>
 					First Name:
 					<input type="text" name="author_fname@COUNT@" value=""/>
-					Middle Name (optional): 
-					<input type="text" name="author_mname@COUNT@" value=""/>
 					Last Name: 
 					<input type="text" name="author_lname@COUNT@" value=""/>
 					<input type="button" class="minus" value="-" onclick="$('#author@COUNT@').remove(); countAuthor--; return false;"/>

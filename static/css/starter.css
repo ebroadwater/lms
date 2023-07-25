@@ -31,6 +31,13 @@ body{
 	height: 250px;
 	margin-bottom:0;
 }
+.search-bar-view{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100px;
+	margin-bottom:0;
+}
 #search-text{
 	height: 25px;
 	width: 50%;
@@ -141,4 +148,23 @@ tr:hover {background-color: lightblue;}
 .actions{
 	display: flex;
 	gap: 20px;
+}
+.book-row{
+	display: flex;
+	border-top: solid 1px red;
+	border-bottom: solid 1px red;
+	justify-content: center;
+}
+.book-page{
+	display: flex;
+	flex-direction: column;
+	border: solid 1px black;
+	width: 85%;
+	margin: auto;
+}
+.book-info{
+	border: solid 1px blue;
+	display: flex;
+	flex-direction: column;
+	width: 90%;
 }

@@ -25,6 +25,12 @@
 			$_SESSION['first_name'] = $row['first_name'];
 			$_SESSION['last_name'] = $row['last_name'];
 			$_SESSION['is_staff'] = $row['is_staff'];
+
+			if (isset($_SESSION['from'])){
+				header("Location: ". $_SESSION['from']);
+				unset($_SESSION['from']);
+				return;
+			}
 			header("Location: index.php");
 			return;
 		}
@@ -43,6 +49,15 @@
 		<link rel='stylesheet' href='static/css/starter.css'>
 	</head>
 	<body>
+		<ul class="nav">
+			<li class="nav-link">
+			<?php 
+				echo('<a href="index.php">Home</a>');
+				echo('<a href="login.php">Log In</a>');
+				echo('<a href="signup.php">Sign Up</a>');
+			?>
+			</li>
+		</ul>
 		<h1 class="login-form">Log In</h1>
 		<?php 
 			flashMessages();
