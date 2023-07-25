@@ -1,7 +1,7 @@
 <?php
 	session_start();
-	require_once "pdo.php";
-	require_once "util.php";
+	require_once "../pdo.php";
+	require_once "../util.php";
 
 	if (!isset($_SESSION['user_id'])){
 		die("ACCESS DENIED");
@@ -13,7 +13,7 @@
 	}
 	if (!isset($_REQUEST['user_id'])){
 		$_SESSION['error'] = "Invalid user_id";
-		header("Location: members.php");
+		header("Location: ../members.php");
 		return;
 	}
 	$stmt = $pdo->prepare('DELETE FROM users WHERE user_id=:uid');
@@ -21,5 +21,5 @@
 		':uid' => $_REQUEST['user_id']
 	));
 	$_SESSION['success'] = "Profile deleted";
-	header("Location: members.php");
+	header("Location: ../members.php");
 	return;

@@ -172,4 +172,61 @@ function insertBook($pdo){
 		}
 	}
 }
+function makeSearch($pdo, $secondpart, $query){
+	$firstpart = "SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, 
+	GROUP_CONCAT(DISTINCT d.name) Publisher, GROUP_CONCAT(DISTINCT c.name) Genres, 
+	GROUP_CONCAT(DISTINCT f.last_name, ', ', f.first_name SEPARATOR ';') Authors, 
+	GROUP_CONCAT(DISTINCT f.author_id) Author_ids
+	FROM Book a INNER JOIN BookGenre b ON a.book_id = b.book_id INNER JOIN Genre c ON b.genre_id = c.genre_id 
+	INNER JOIN Publisher d ON a.publisher_id= d.publisher_id INNER JOIN BookAuthor e ON e.book_id = a.book_id 
+	INNER JOIN Author f ON f.author_id = e.author_id ";
+
+	$thirdpart = "GROUP BY a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description";
+
+	$query_list = explode(" ", $query);
+	$stmt = $pdo->prepare($firstpart.$secondpart.$thirdpart);
+	if (count($query_list) <= 1){
+		$stmt->execute(array(
+			':temp' => "%".$query."%"
+		));
+		$book_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return $book_list;
+	}
+	else{
+		$book_list = array();
+		foreach($query_list as $q){
+			$stmt->execute(array(
+				':temp' => "%".$q."%"
+			));
+			while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+				$check = true;
+				foreach($book_list as $b){
+					if ($b['book_id'] == $row['book_id']){
+						$check = false;
+					}
+				}
+				if ($check){
+					array_push($book_list, $row);
+				}
+			}
+		}
+		return $book_list;
+	}
+}
+function getBook($pdo, $book_id){
+	$stmt = $pdo->prepare("SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, 
+	GROUP_CONCAT(DISTINCT d.name) Publisher, GROUP_CONCAT(DISTINCT c.name) Genres, 
+	GROUP_CONCAT(DISTINCT f.last_name, ', ', f.first_name SEPARATOR ';') Authors, 
+	GROUP_CONCAT(DISTINCT f.author_id) Author_ids
+	FROM Book a INNER JOIN BookGenre b ON a.book_id = b.book_id INNER JOIN Genre c ON b.genre_id = c.genre_id 
+	INNER JOIN Publisher d ON a.publisher_id= d.publisher_id INNER JOIN BookAuthor e ON e.book_id = a.book_id 
+	INNER JOIN Author f ON f.author_id = e.author_id WHERE a.book_id= :bid 
+	GROUP BY a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description");
+
+	$stmt->execute(array(
+		':bid' => $book_id
+	));
+	$book = $stmt->fetch(PDO::FETCH_ASSOC);
+	return $book;
+}
 //ALTER TABLE some_table AUTO_INCREMENT=1

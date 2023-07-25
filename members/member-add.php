@@ -1,7 +1,7 @@
 <?php 
 	session_start();
-	require_once "pdo.php";
-	require_once "util.php";
+	require_once "../pdo.php";
+	require_once "../util.php";
 
 	if (!isset($_SESSION['user_id'])){
 		die("ACCESS DENIED");
@@ -18,7 +18,7 @@
 	$emails = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 	if (isset($_POST['cancel'])){
-		header("Location: members.php");
+		header("Location: ../members.php");
 		return;
 	}
 	if (isset($_POST['add']) && isset($_POST['first_name']) && isset($_POST['last_name']) && isset($_POST['email']) &&
@@ -31,7 +31,7 @@
 			foreach($emails as $em){
 				if ($em['email'] === $_POST['email']){
 					$_SESSION['error'] = "Account with this email already exists";
-					header("Location: add.php");
+					header("Location: member-add.php");
 					return;
 				}
 			}
@@ -50,7 +50,7 @@
 				':pwd' => $hash
 			));
 			$_SESSION['success'] = "Account created";
-			header("Location: members.php");
+			header("Location: ../members.php");
 			return;
 	}
 
@@ -59,7 +59,8 @@
 <html>
 	<header>
 		<title>LMS Add Member</title>
-		<?php require_once "head.php";?>
+		<?php require_once "../head.php";?>
+		<link rel='stylesheet' href='../static/css/starter.css'>
 	</header>
 	<body>
 		<h1 class="login-form">Add Member</h1>

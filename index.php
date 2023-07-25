@@ -3,15 +3,17 @@
 	require_once "pdo.php";
 	require_once "util.php";
 
-	$staff = isset($_SESSION['is_staff']);
+	$staff = 0;
 	$loggedin = isset($_SESSION['user_id']);
+	if ($loggedin){
+		$staff = $_SESSION['is_staff'];
+	}
 ?>
 <!DOCTYPE html>
 <html>
 	<head>
 		<title>Emma's LMS Homepage</title>
 		<?php require_once "head.php";?>
-		<link rel='stylesheet' href='static/css/starter.css'>
 	</head>
 	<body>
 		<ul class="nav">
@@ -20,15 +22,16 @@
 				echo('<a href="index.php">Home</a>');
 				if ($loggedin){
 					if ($staff){
-						echo('<a href="add.php">Add Book</a>');
-						echo('<a href="member-add.php">Add Member</a>');
+						echo('<a href="books/add.php">Add Book</a>');
+						echo('<a href="members/member-add.php">Add Member</a>');
 						echo('<a href="members.php">Members</a>');
 					}
+					echo('<a href="members/members-edit.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
 					echo('<a href="logout.php">Log Out</a>');
 				}
 				else{
-					echo('<a href="login.php">Log In</a></li>');
-					echo('<li class="nav-link"><a href="signup.php">Sign Up</a>');
+					echo('<a href="login.php">Log In</a>');
+					echo('<a href="signup.php">Sign Up</a>');
 				}
 			?>
 			</li>
@@ -37,7 +40,7 @@
 		<?php 
 			flashMessagesCenter();
 		?>
-		<form method="GET">
+		<form method="GET" action="catalog.php">
 			<div class="search-bar">
 				<label for="type-text">Type:</label>
 				<select name="type" id="type-text">
@@ -47,7 +50,7 @@
 					<option value="series">Series</option>
 					<option value="genre">Genre</option>
 				</select>
-				<input type="text" id="search-text">
+				<input type="text" id="search-text" name="q">
 				<input type="submit" name="search" class="button" value="Search">
 			</div>	
 		</form>
@@ -63,12 +66,6 @@
 				echo("<h4>Overdue Books</h4>");
 				echo("<div class='admin-view-row'>");
 				echo("</div>");
-				// echo("<h4>Edit Members</h4>");
-				// echo("<div class='admin-view-row'>");
-				// echo("</div>");
-				// echo("<h4>Edit Catalog</h4>");
-				// echo("<div class='admin-view-row'>");
-				// echo("</div>");
 				echo("</div>");
 			}
 			else{

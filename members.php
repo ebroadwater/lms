@@ -24,8 +24,8 @@
 			<li class="nav-link">
 			<?php 
 				echo('<a href="index.php">Home</a>');
-				echo('<a href="add.php">Add Book</a>');
-				echo('<a href="member-add.php">Add Member</a>');
+				echo('<a href="books/add.php">Add Book</a>');
+				echo('<a href="members/member-add.php">Add Member</a>');
 				echo('<a href="members.php">Members</a>');
 				echo('<a href="logout.php">Log Out</a>');
 			?>
@@ -57,7 +57,7 @@
 					}
 					echo($role."</td><td>");
 					echo("<div class='actions'>");
-					echo('<a href="members-edit.php?user_id='.$mem['user_id'].'" class="edit-button">Edit</a>');
+					echo('<a href="members/members-edit.php?user_id='.$mem['user_id'].'" class="edit-button">Edit</a>');
 					echo(' | ');
 					echo('<form><input type="button" name="delete" class="delete-button" id="del-btn" value="Delete" onclick="deleteAlert('.$mem['user_id'].')"></form>');
 					echo("</div>");
@@ -75,7 +75,7 @@
 			function deleteAlert(user_id){
 				if (confirm("Are you sure you want to delete this member?")){
 					const xmlhttp = new XMLHttpRequest();
-					xmlhttp.open("POST", "member-delete.php?user_id=" + user_id);
+					xmlhttp.open("POST", "members/member-delete.php?user_id=" + user_id);
 					xmlhttp.send();
 				}
 			}
