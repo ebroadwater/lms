@@ -77,6 +77,7 @@
 					const xmlhttp = new XMLHttpRequest();
 					xmlhttp.open("POST", "members/member-delete.php?user_id=" + user_id);
 					xmlhttp.send();
+					window.location.reload();
 				}
 			}
 		</script>

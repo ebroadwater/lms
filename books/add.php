@@ -13,7 +13,8 @@
 		return;
 	}
 	if (isset($_POST['add']) && isset($_POST['title']) && isset($_POST['publisher']) && isset($_POST['yr_published']) 
-		&& isset($_POST['total_copies']) && isset($_POST['author_fname1']) && isset($_POST['author_lname1']) && isset($_POST['genre_name1'])){
+		&& isset($_POST['total_copies']) && isset($_POST['author_fname1']) && isset($_POST['author_lname1']) 
+		&& isset($_POST['genre_name1']) && isset($_POST['format']) && isset($_POST['available_copies'])){
 			$msg = validateBook();
 			if (is_string($msg)){
 				$_SESSION['error'] = $msg;
@@ -32,7 +33,20 @@
 				header("Location: add.php");
 				return;
 			}
-			insertBook($pdo);
+			if (isset($_POST['book-cover'])){
+				$msg = validateImage('book-cover');
+				if (is_string($msg)){
+					$_SESSION['error'] = $msg;
+					header("Location: add.php");
+					return;
+				}
+			}
+			$result = insertBook($pdo, 'book-cover');
+			if (is_string($result)){
+				$_SESSION['error'] = $result;
+				header("Location: add.php");
+				return;
+			}
 
 			$_SESSION['success'] = "Book added"; 
 			header("Location: ../index.php");
@@ -63,7 +77,7 @@
 		<?php 
 			flashMessages();
 		?>
-		<form method="POST">
+		<form method="POST" enctype="multipart/form-data">
 			<div class="login-page">
 				<p><strong>Title: </strong><input type="text" name="title" id="book_title" size="50"></p>
 				<p>
@@ -86,6 +100,7 @@
 				<p><strong>Series (optional): </strong><input type="text" name="series" id="book_series" size="44"></p>
 				<p><strong>Publisher: </strong><input type="text" name="publisher" id="book_publisher" class="pub" size="44"></p>
 				<p><strong>Year Published: </strong><input type="text" name="yr_published" id="book_pub_yr" size="16"></p>
+				<p><strong>Edition (optional): </strong><input type="text" name="edition" id="book_edition" size="44"></p>
 				<p>
 					<strong>Genre(s): </strong><input type="submit" id="addGenre" value="+" class="plus">
 					<div id="genre_fields">
@@ -98,7 +113,16 @@
 					</div>
 				</p>
 				<p><strong>Total Copies: </strong><input type="number" name="total_copies"></p>
+				<p><strong>Available Copies: </strong><input type="number" name="available_copies"></p>
+				<label for="format-type">Type:</label>
+				<select name="format" id="format-type">
+					<option value="book">Book</option>
+					<option value="ebook">eBook</option>
+					<option value="audiobook">Audiobook</option>
+				</select>
 				<p><strong>Description (optional): </strong><br><br><textarea name="description" rows="8" cols="80"></textarea></p>
+				<input type="hidden" name="MAX_FILE_SIZE" value="4000000" />
+				<p><strong>Book Cover (optional): </strong><input type="file" name="book-cover"></p>
 				<p>
 					<input type="submit" class="button" name="add" value="Add">
 					<input type="submit" class="button" name="cancel" value="Cancel">

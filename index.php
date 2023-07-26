@@ -26,7 +26,7 @@
 						echo('<a href="members/member-add.php">Add Member</a>');
 						echo('<a href="members.php">Members</a>');
 					}
-					echo('<a href="members/members-edit.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
+					echo('<a href="members/profile.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
 					echo('<a href="logout.php">Log Out</a>');
 				}
 				else{
@@ -42,14 +42,25 @@
 		?>
 		<form method="GET" action="catalog.php">
 			<div class="search-bar">
-				<label for="type-text">Type:</label>
-				<select name="type" id="type-text">
-					<option value="keyword">Keyword</option>
-					<option value="title">Title</option>
-					<option value="author">Author</option>
-					<option value="series">Series</option>
-					<option value="genre">Genre</option>
-				</select>
+				<div style="float:left;margin-right:20px;">
+					<label for="type-text" class="above">Type:</label>
+					<select name="type" id="type-text" class="above">
+						<option value="keyword">Keyword</option>
+						<option value="title">Title</option>
+						<option value="author">Author</option>
+						<option value="series">Series</option>
+						<option value="genre">Genre</option>
+					</select>
+				</div>
+				<div style="float:left;">
+					<label for="format-type" class="above">Format:</label>
+					<select name="format" id="format-type" class="above">
+						<option value="all">All Formats</option>
+						<option value="book">Book</option>
+						<option value="title">eBook</option>
+						<option value="audiobook">Audiobook</option>
+					</select>
+				</div>
 				<input type="text" id="search-text" name="q">
 				<input type="submit" name="search" class="button" value="Search">
 			</div>	
@@ -71,10 +82,10 @@
 			else{
 				echo("<h4>Explore favorites titles!</h4>");
 				echo("<div class='home-view-row'>");
-				echo("<img src='static/images/100yrs.png' width='170' height='250'/>");
+				echo("<img src='static/images/100-years-of-solitude.png' width='170' height='250'/>");
 				echo("<img src='static/images/lexicon.png' width='170' height='250'/>");
-				echo("<img src='static/images/percy_jackson.png' width='170' height='250'/>");
-				echo("<img src='static/images/the_power.png' width='170' height='250'/>");
+				echo("<img src='static/images/the-lightning-thief.png' width='170' height='250'/>");
+				echo("<img src='static/images/the-power.png' width='170' height='250'/>");
 				echo("</div>");
 			}
 		?>

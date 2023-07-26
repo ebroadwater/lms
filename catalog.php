@@ -8,13 +8,15 @@
 	if ($loggedin){
 		$staff = $_SESSION['is_staff'];
 	}
-	if (!isset($_GET['type']) && !isset($_GET['search'])){
+	if (!isset($_GET['type']) && !isset($_GET['search']) && !isset($_GET['format'])){
 		$_SESSION['error'] = "Invalid request, search parameters missing";
 		header("Location: index.php");
 		return;
 	}
 	$secondpart = "";
 	$book_list = null;
+	$include_for = FALSE;
+	$for = "";
 
 	if (strlen($_GET['q']) > 0){
 		$type = $_REQUEST['type'];
@@ -35,7 +37,11 @@
 							c.name LIKE :temp OR d.name LIKE :temp OR f.first_name LIKE :temp OR f.last_name LIKE :temp ";
 		}
 	}
-	$book_list = makeSearch($pdo, $secondpart, $_GET['q']);
+	if ($_GET['format'] !== "all"){
+		$for = "AND a.format= :for ";
+		$include_for = TRUE;
+	}
+	$book_list = makeSearch($pdo, $secondpart, $_GET['q'], $for);
 	
 ?>
 <!DOCTYPE html>
@@ -71,14 +77,25 @@
 		?>
 		<form method="GET">
 			<div class="search-bar-view">
-				<label for="type-text-view">Type:</label>
-				<select name="type" id="type-text-view">
-					<option value="keyword">Keyword</option>
-					<option value="title"<?php if ($_GET['type'] == "title"){ echo("selected");}?>>Title</option>
-					<option value="author"<?php if ($_GET['type'] == "author"){ echo("selected");}?>>Author</option>
-					<option value="series"<?php if ($_GET['type'] == "series"){ echo("selected");}?>>Series</option>
-					<option value="genre"<?php if ($_GET['type'] == "genre"){ echo("selected");}?>>Genre</option>
-				</select>
+				<div style="float:left;margin-right:20px;">
+					<label for="type-text-view" class="above">Type:</label>
+					<select name="type" id="type-text-view" class="above">
+						<option value="keyword">Keyword</option>
+						<option value="title"<?php if ($_GET['type'] == "title"){ echo("selected");}?>>Title</option>
+						<option value="author"<?php if ($_GET['type'] == "author"){ echo("selected");}?>>Author</option>
+						<option value="series"<?php if ($_GET['type'] == "series"){ echo("selected");}?>>Series</option>
+						<option value="genre"<?php if ($_GET['type'] == "genre"){ echo("selected");}?>>Genre</option>
+					</select>
+				</div>
+				<div style="float:left;">
+					<label for="format-type-view" class="above">Format:</label>
+					<select name="format" id="format-type-view" class="above">
+						<option value="all"<?php if ($_GET['format'] == "all"){ echo("selected");}?>>All Formats</option>
+						<option value="book"<?php if ($_GET['format'] == "book"){ echo("selected");}?>>Book</option>
+						<option value="ebook"<?php if ($_GET['format'] == "ebook"){ echo("selected");}?>>eBook</option>
+						<option value="audiobook"<?php if ($_GET['format'] == "audiobook"){ echo("selected");}?>>Audiobook</option>
+					</select>
+				</div>
 				<input type="text" id="search-text" name="q" value="<?php echo $_GET['q']?>">
 				<input type="submit" name="search" class="button" value="Search">
 			</div>	
@@ -96,35 +113,41 @@
 								echo("<h4><a href='books/view.php?book_id=".htmlentities($book['book_id'])."'>".htmlentities($book['title'])."</a></h4>");
 							echo("</div>");
 							echo("<div class='book-row'>");
-								$author_list = explode(";", $book['Authors']);
-								$author_id_list = explode(",", $book['Author_ids']);
-								$index = 0;
-								foreach($author_list as $author){
-									echo("<p><a href='catalog.php?type=author&q=");
-									$name = explode(",", $author);
-									$fname = str_replace(' ', '', htmlentities($name[1]));
-									$lname = str_replace(' ', '', htmlentities($name[0]));
-									$q = $fname."+".$lname;
-									echo($q."&search=Search'>");
-									echo("<i>".htmlentities($author));
-									if ($index + 1 < count($author_list)){
-										echo(",  ");
-									}
-									echo("</i></a></p>");
-									$index++;
-								}
+								echo(listAuthors($book, TRUE));
 							echo("</div>");
 							echo("<div class='book-row'>");
-								echo("<p>Publisher: ".$book['Publisher']."</p>");
+								echo("<p>Format: ".htmlentities($book['format'])."</p>");
 							echo("</div>");
 							echo("<div class='book-row'>");
-								echo("<p>Available Copies: ".$book['available_copies']."/".$book['total_copies']."</p>");
+								echo("<p>Available Copies: ".htmlentities($book['available_copies'])."/".htmlentities($book['total_copies'])."</p>");
 							echo("</div>");
+							if ($staff){
+								echo("<div class='book-row'>");
+									// echo("<a class='edit-button' href='books/edit.php?book_id=".htmlentities($book['book_id'])."'>Edit</a>");
+									echo("<form method='GET' action='books/edit.php'>");
+										echo("<input type='hidden' name='book_id' value='".htmlentities($book['book_id'])."'>");
+										echo("<input type='submit' value='Edit' name='edit'>");
+										$_SESSION['from'] = "../catalog.php?type=".htmlentities($_GET['type'])."&format=".htmlentities($_GET['format'])."&q=".htmlentities($_GET['q'])."&search=Search";
+									echo("</form>");
+									echo('<form><input type="button" name="delete" id="book-del-btn" value="Delete" onclick="deleteAlert('.$book['book_id'].')"></form>');
+								echo("</div>");
+								
+							}
 						echo("</div>");
 					echo("</div>");
 					$count++;
 				}
 			?>
 		</div>
+		<script>
+			function deleteAlert(book_id){
+				if (confirm("Are you sure you want to delete this book?")){
+					const xmlhttp = new XMLHttpRequest();
+					xmlhttp.open("POST", "books/delete.php?book_id=" + book_id);
+					xmlhttp.send();
+					window.location.reload(); //reload page 
+				}
+			}
+		</script>
 	</body>
 </html>
