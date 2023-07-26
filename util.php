@@ -21,11 +21,14 @@ function flashMessagesCenter(){
 }
 function validateBook(){
 	if (strlen($_POST['title']) < 1 || strlen($_POST['publisher']) < 1 || strlen($_POST['yr_published']) < 1 ||
-		strlen($_POST['total_copies']) < 1){
+		strlen($_POST['total_copies']) < 1 || strlen($_POST['format']) < 1 || strlen($_POST['available_copies']) < 1){
 			return "All fields are required";
 	}
 	if (!is_numeric($_POST['yr_published'])){
 		return "Year must be numeric";
+	}
+	if ($_POST['available_copies'] > $_POST['total_copies']){
+		return "Available copies cannot be greater than the total";
 	}
 }
 function validateAuthor(){
@@ -48,7 +51,27 @@ function validateGenre(){
 		}
 	}
 }
-function insertBook($pdo){
+function validateImage($image_file){
+	if ($_FILES[$image_file]['error'] != 0 || $_FILES[$image_file]['error'] !== UPLOAD_ERR_OK){
+		return "Failed to upload image";
+	}
+	$fileExtensionsAllowed = ['jpeg','jpg','png']; // These will be the only file extensions allowed 
+
+	$fileSize = $_FILES[$image_file]['size'];
+	$fileType = $_FILES[$image_file]['type'];
+	$fileName = $_FILES[$image_file]['name'];
+	$filearray = explode('.',$fileName);
+	$fileExtension = strtolower(end($filearray));
+
+	if (! in_array($fileExtension,$fileExtensionsAllowed)) {
+		return "This file extension is not allowed. Please upload a JPEG or PNG file";
+	}
+
+	if ($fileSize > 4000000) {
+		return "File exceeds maximum size (4MB)";
+	}
+}
+function insertPublisher($pdo){
 	//Publisher
 	$publisher_id = false;
 
@@ -68,19 +91,36 @@ function insertBook($pdo){
 		));
 		$publisher_id = $pdo->lastInsertId();
 	}
+	return $publisher_id;
+}
+function insertBook($pdo, $image_file){
+	//Publisher
+	$publisher_id = insertPublisher($pdo);
 	//Book
-	$stmt = $pdo->prepare('INSERT INTO Book (title, publisher_id, year_published, total_copies, available_copies) 
-							VALUES (:ti, :pid, :yr, :co, :av)');
+	$stmt = $pdo->prepare('INSERT INTO Book (title, publisher_id, year_published, total_copies, available_copies, format) 
+							VALUES (:ti, :pid, :yr, :co, :av, :fo)');
 	$stmt->execute(array(
 		'ti' => $_POST['title'], 
 		'pid' => $publisher_id, 
 		'yr' => $_POST['yr_published'], 
 		':co' => $_POST['total_copies'], 
-		':av' => $_POST['total_copies']
+		':av' => $_POST['available_copies'], 
+		':fo' => $_POST['format']
 	));
 	$book_id = $pdo->lastInsertId();
-
-	//If description and series included 
+	//Description, series, edition
+	insertOptionalFields($pdo, $book_id);
+	//Upload image
+	$msg = insertImage($pdo, $image_file, $book_id);
+	if (is_string($msg)){
+		return $msg;
+	}
+	//Genre
+	insertGenre($pdo, $book_id);
+	//Author
+	insertAuthor($pdo, $book_id);
+}
+function insertOptionalFields($pdo, $book_id){
 	if (isset($_POST['series']) && strlen($_POST['series']) > 0){
 		$stmt = $pdo->prepare('UPDATE Book SET series= :se WHERE book_id= :bid');
 		$stmt->execute(array(
@@ -94,8 +134,16 @@ function insertBook($pdo){
 			':de' => $_POST['description'], 
 			':bid' => $book_id
 		));
-	}
-	//Genre
+	} 
+	if (isset($_POST['edition']) && strlen($_POST['edition']) > 0){
+		$stmt = $pdo->prepare('UPDATE Book SET edition= :ed WHERE book_id= :bid');
+		$stmt->execute(array(
+			':ed' => $_POST['edition'], 
+			':bid' => $book_id
+		));
+	} 
+}
+function insertGenre($pdo, $book_id){
 	for ($i = 1; $i <= 7; $i++){
 		if (isset($_POST['genre_name'.$i])){
 			$genre_id = false;
@@ -104,6 +152,7 @@ function insertBook($pdo){
 				':na' => $_POST['genre_name'.$i]
 			));
 			$genre_row = $stmt->fetch(PDO::FETCH_ASSOC);
+			$stmt->closeCursor();
 			if ($genre_row !== false){
 				$genre_id = $genre_row['genre_id'];
 			}
@@ -122,7 +171,8 @@ function insertBook($pdo){
 			));
 		}
 	}
-	//Author
+}
+function insertAuthor($pdo, $book_id){
 	for ($i = 1; $i <= 5; $i++){
 		if (isset($_POST['author_fname'.$i]) && isset($_POST['author_lname'.$i])){
 			$fname = $_POST['author_fname'.$i];
@@ -154,15 +204,6 @@ function insertBook($pdo){
 				));
 				$author_id = $pdo->lastInsertId();
 			}
-
-			//If middle name defined
-			if (isset($_POST['author_mname'.$i]) && strlen($_POST['author_mname'.$i]) > 0){
-				$stmt = $pdo->prepare('UPDATE Author SET middle_name= :mn WHERE author_id=:aid');
-				$stmt->execute(array(
-					':mn' => $_POST['author_mname'.$i], 
-					':aid' => $author_id
-				));
-			}
 			//BookAuthor
 			$stmt = $pdo->prepare('INSERT INTO BookAuthor (book_id, author_id) VALUES (:bid, :aid)');
 			$stmt->execute(array(
@@ -172,32 +213,91 @@ function insertBook($pdo){
 		}
 	}
 }
-function makeSearch($pdo, $secondpart, $query){
-	$firstpart = "SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, 
+function insertImage($pdo, $image_file, $book_id){
+	if ($image_file != '' && strlen($image_file) > 0 && $_FILES[$image_file]['size'] != 0){
+
+		$uploadDirectory = "/Applications/MAMP/htdocs/lms/static/images/";
+
+		$fileName = $_FILES[$image_file]['name'];
+		$fileTmpName  = $_FILES[$image_file]['tmp_name'];
+
+		$uploadPath = $uploadDirectory . basename($fileName); 
+
+		$didUpload = move_uploaded_file($fileTmpName, $uploadPath);
+
+		if ($didUpload) {
+			$stmt = $pdo->prepare('UPDATE Book SET image_file= :im WHERE book_id= :bid');
+			$stmt->execute(array(
+				':im' => $fileName, 
+				':bid' => $book_id
+			));
+		}
+		else{
+			return "An error occurred. Please contact the administrator.";
+		}
+	}
+}
+function makeSearch($pdo, $secondpart, $query, $for){
+	$firstpart = "SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format,
 	GROUP_CONCAT(DISTINCT d.name) Publisher, GROUP_CONCAT(DISTINCT c.name) Genres, 
-	GROUP_CONCAT(DISTINCT f.last_name, ', ', f.first_name SEPARATOR ';') Authors, 
+	GROUP_CONCAT(DISTINCT f.last_name, ', ', f.first_name, ': ', f.is_translator SEPARATOR ';') Authors, 
 	GROUP_CONCAT(DISTINCT f.author_id) Author_ids
 	FROM Book a INNER JOIN BookGenre b ON a.book_id = b.book_id INNER JOIN Genre c ON b.genre_id = c.genre_id 
 	INNER JOIN Publisher d ON a.publisher_id= d.publisher_id INNER JOIN BookAuthor e ON e.book_id = a.book_id 
 	INNER JOIN Author f ON f.author_id = e.author_id ";
 
-	$thirdpart = "GROUP BY a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description";
+	$thirdpart = "GROUP BY a.book_id, a.title, a.series, a.year_published, 
+	a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format";
+
+	if ($secondpart == ""){
+		$stmt = $pdo->prepare($firstpart.$thirdpart);
+		if ($for == ""){
+			$stmt->execute();
+		}
+		else{
+			$stmt = $pdo->prepare($firstpart.$for.$thirdpart);
+			$stmt->execute(array(
+				':for' => $_GET['format']
+			));
+		}
+		$book_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		return $book_list;
+	}
 
 	$query_list = explode(" ", $query);
-	$stmt = $pdo->prepare($firstpart.$secondpart.$thirdpart);
 	if (count($query_list) <= 1){
-		$stmt->execute(array(
-			':temp' => "%".$query."%"
-		));
+		if ($for == ""){
+			$stmt = $pdo->prepare($firstpart.$secondpart.$thirdpart);
+			$stmt->execute(array(
+				':temp' => "%".$query."%"
+			));
+		}
+		else{
+			$stmt = $pdo->prepare($firstpart.$secondpart.$for.$thirdpart);
+			$stmt->execute(array(
+				':temp' => "%".$query."%", 
+				':for' => $_GET['format']
+			));
+		}
 		$book_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 		return $book_list;
 	}
 	else{
 		$book_list = array();
 		foreach($query_list as $q){
-			$stmt->execute(array(
-				':temp' => "%".$q."%"
-			));
+			if ($for == ""){
+				$stmt = $pdo->prepare($firstpart.$secondpart.$thirdpart);
+				$stmt->execute(array(
+					':temp' => "%".$query."%"
+				));
+			}
+			else{
+				$stmt = $pdo->prepare($firstpart.$secondpart.$for.$thirdpart);
+				$stmt->execute(array(
+					':temp' => "%".$query."%", 
+					':for' => $_GET['format']
+				));
+			}
 			while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 				$check = true;
 				foreach($book_list as $b){
@@ -214,19 +314,55 @@ function makeSearch($pdo, $secondpart, $query){
 	}
 }
 function getBook($pdo, $book_id){
-	$stmt = $pdo->prepare("SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, 
+	$stmt = $pdo->prepare("SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format,
 	GROUP_CONCAT(DISTINCT d.name) Publisher, GROUP_CONCAT(DISTINCT c.name) Genres, 
-	GROUP_CONCAT(DISTINCT f.last_name, ', ', f.first_name SEPARATOR ';') Authors, 
+	GROUP_CONCAT(DISTINCT f.last_name, ', ', f.first_name, ': ', f.is_translator SEPARATOR ';') Authors, 
 	GROUP_CONCAT(DISTINCT f.author_id) Author_ids
 	FROM Book a INNER JOIN BookGenre b ON a.book_id = b.book_id INNER JOIN Genre c ON b.genre_id = c.genre_id 
 	INNER JOIN Publisher d ON a.publisher_id= d.publisher_id INNER JOIN BookAuthor e ON e.book_id = a.book_id 
 	INNER JOIN Author f ON f.author_id = e.author_id WHERE a.book_id= :bid 
-	GROUP BY a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description");
+	GROUP BY a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format");
 
 	$stmt->execute(array(
 		':bid' => $book_id
 	));
 	$book = $stmt->fetch(PDO::FETCH_ASSOC);
 	return $book;
+}
+function listAuthors($book, $is_dir){
+	$str = "";
+	$author_list_start = explode(";", $book['Authors']);
+	$author_id_list = explode(",", $book['Author_ids']);
+	$author_translator_list = array();
+	$author_list = array();
+	foreach($author_list_start as $au){
+		$one = explode(":", $au);
+		array_push($author_translator_list, $one[1]);
+		array_push($author_list, $one[0]);
+	}
+	$index = 0;
+	foreach($author_list as $author){
+		if ($is_dir){
+			$str = $str."<p><a href='catalog.php?type=author&q=";
+		}
+		else{
+			$str = $str."<p><a href='../catalog.php?type=author&q=";
+		}
+		$name = explode(",", $author);
+		$fname = str_replace(' ', '', htmlentities($name[1]));
+		$lname = str_replace(' ', '', htmlentities($name[0]));
+		$q = $fname."+".$lname;
+		$str = $str.$q."&search=Search'>";
+		$str = $str."<i>".htmlentities($author);
+		if ($author_translator_list[$index] == 1){
+			$str = $str."(Translator)";
+		}
+		if ($index + 1 < count($author_list)){
+			$str = $str.", \n";
+		}
+		$str = $str."</i></a></p>";
+		$index++;
+	}
+	return $str;
 }
 //ALTER TABLE some_table AUTO_INCREMENT=1

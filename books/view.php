@@ -39,29 +39,22 @@
 			</li>
 		</ul>
 		<h1><?php echo $book['title'];?></h1>
+		<?php 
+			flashMessages();
+		?>
+		<?php 
+			if (isset($book['image_file'])){
+				$file_name = htmlentities($book['image_file']);
+				if (strlen($file_name) > 0 && $file_name !== NULL){
+					echo("<img src='../static/images/".$file_name."' width='170' height='250'/>");
+				}
+			}
+		?>
 		<div>
 			<p>
 				Author(s): 
 				<?php 
-					// echo("<div class='book-row'>");
-					$author_list = explode(";", $book['Authors']);
-					$author_id_list = explode(",", $book['Author_ids']);
-					$index = 0;
-					foreach($author_list as $author){
-						echo("<p><a href='../catalog.php?type=author&q=");
-						$name = explode(",", $author);
-						$fname = str_replace(' ', '', htmlentities($name[1]));
-						$lname = str_replace(' ', '', htmlentities($name[0]));
-						$q = $fname."+".$lname;
-						echo($q."&search=Search'>");
-						echo("<i>".htmlentities($author));
-						if ($index + 1 < count($author_list)){
-							echo(",  ");
-						}
-						echo("</i></a></p>");
-						$index++;
-					}
-					// echo("</div>");
+					echo(listAuthors($book, FALSE));
 				?>
 			</p>
 		</div>
@@ -72,13 +65,18 @@
 		<?php 
 			if (htmlentities($book['series']) !== null){
 				echo("<h4>Series:</h4>");
-				echo("<p>Part of the ");
-				echo("<a href='../catalog.php?type=series&q=".$book['series']."&search=Search'>".htmlentities($book['series'])."</a> series");
+				echo("<a href='../catalog.php?type=series&q=".$book['series']."&search=Search'>".htmlentities($book['series'])."</a>");
 			}
 		?>
 		<h4>Publisher:</h4>
 		<?php 
 			echo("<p>".htmlentities($book['Publisher'])." (".htmlentities($book['year_published']).")</p>");
+		?>
+		<h4>Edition:</h4>
+		<?php 
+			if (isset($book['edition'])){
+				echo("<p>".htmlentities($book['edition'])."</p>");
+			}
 		?>
 		<h4>Holds:</h4>
 		<h4>Genres:</h4>
@@ -105,11 +103,6 @@
 				<input type="submit" value="Checkout" name="checkout">
 				<input type="hidden" value="<?php echo htmlentities($book['book_id'])?>" name="book_id">
 				<?php $_SESSION['from'] = "../lms/books/checkout.php?checkout=Checkout&book_id=".htmlentities($book['book_id'])?>
-			</form>
-			<form method="GET" action="return.php">
-				<input type="submit" value="Return" name="return">
-				<input type="hidden" value="<?php echo htmlentities($book['book_id'])?>" name="book_id">
-				<?php $_SESSION['from'] = "../lms/books/return.php?return=Return&book_id=".htmlentities($book['book_id'])?>
 			</form>
 		</p>
 	</body>

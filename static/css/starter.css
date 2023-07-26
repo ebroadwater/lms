@@ -5,6 +5,9 @@ body{
 	padding: 10px;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+.above{
+	display: block;
+}
 .nav{
 	/* display: inline; */
 	list-style-type: none;
