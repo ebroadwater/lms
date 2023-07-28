@@ -8,7 +8,17 @@
 	if ($loggedin){
 		$staff = $_SESSION['is_staff'];
 	}
+	$back = "../index.php";
+	if (isset($_SESSION['from'])){
+		$back = $_SESSION['from'];
+	}
 	$book = getBook($pdo, $_GET['book_id']);
+	if ($book === false){
+		$_SESSION['error'] = "Could not load book";
+		header("Location: ".$back);
+		unset($_SESSION['from']);
+		return;
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -40,7 +50,7 @@
 		</ul>
 		<h1><?php echo $book['title'];?></h1>
 		<?php 
-			flashMessages();
+			flashMessagesCenter();
 		?>
 		<?php 
 			if (isset($book['image_file'])){
@@ -51,13 +61,9 @@
 			}
 		?>
 		<div>
-			<p>
-				Author(s): 
-				<?php 
-					echo(listAuthors($book, FALSE));
-				?>
-			</p>
+			<p>Author(s): <?php echo(listAuthors($book, FALSE));?> </p>
 		</div>
+		<p>Format: <?php echo(htmlentities($book['Format']));?></p>
 		<h4>Available Copies:</h4>
 		<?php 
 			echo("<p>".htmlentities($book['available_copies'])." of ".htmlentities($book['total_copies'])." available");
@@ -78,7 +84,6 @@
 				echo("<p>".htmlentities($book['edition'])."</p>");
 			}
 		?>
-		<h4>Holds:</h4>
 		<h4>Genres:</h4>
 		<ul>
 		<?php 
@@ -93,17 +98,17 @@
 			echo("<p>".htmlentities($book['description'])."</p>");
 		?>
 		<p>
-			<!-- <a href='place_hold.php?book_id=<?php echo htmlentities($book['book_id'])?>'>Place Hold</a> -->
 			<form method="GET" action="place_hold.php">
 				<input type="submit" value="Place Hold" name="place_hold">
 				<input type="hidden" value="<?php echo htmlentities($book['book_id'])?>" name="book_id">
-				<?php $_SESSION['from'] = "../lms/books/place_hold.php?place_hold=Place+Hold&book_id=".htmlentities($book['book_id'])?>
 			</form>
 			<form method="GET" action="checkout.php">
-				<input type="submit" value="Checkout" name="checkout">
+				<input type="submit" value="Check Out" name="checkout">
 				<input type="hidden" value="<?php echo htmlentities($book['book_id'])?>" name="book_id">
-				<?php $_SESSION['from'] = "../lms/books/checkout.php?checkout=Checkout&book_id=".htmlentities($book['book_id'])?>
 			</form>
 		</p>
+		<?php
+			echo("<p><a href='".$back."'>Go Back</a></p>");
+		?>
 	</body>
 </html>

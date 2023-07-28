@@ -13,6 +13,8 @@
 		header("Location: index.php");
 		return;
 	}
+	$_SESSION['from'] = $_SERVER['REQUEST_URI'];
+	
 	$secondpart = "";
 	$book_list = null;
 	$include_for = FALSE;
@@ -38,10 +40,18 @@
 		}
 	}
 	if ($_GET['format'] !== "all"){
-		$for = "AND a.format= :for ";
+		// $for = "AND a.format= :for ";
+		$for = "AND g.name = :for ";
 		$include_for = TRUE;
 	}
 	$book_list = makeSearch($pdo, $secondpart, $_GET['q'], $for);
+
+	$formats_list = listFormats($pdo);
+	if ($formats_list === false){
+		$_SESSION['error'] = "Unable to fetch formats";
+		header("Location: index.php");
+		return;
+	}
 	
 ?>
 <!DOCTYPE html>
@@ -91,9 +101,18 @@
 					<label for="format-type-view" class="above">Format:</label>
 					<select name="format" id="format-type-view" class="above">
 						<option value="all"<?php if ($_GET['format'] == "all"){ echo("selected");}?>>All Formats</option>
-						<option value="book"<?php if ($_GET['format'] == "book"){ echo("selected");}?>>Book</option>
-						<option value="ebook"<?php if ($_GET['format'] == "ebook"){ echo("selected");}?>>eBook</option>
-						<option value="audiobook"<?php if ($_GET['format'] == "audiobook"){ echo("selected");}?>>Audiobook</option>
+						<?php
+							if ($formats_list){
+								foreach($formats_list as $format){
+									$name = htmlentities($format['name']);
+									echo("<option value='".$name."' ");
+									if ($_GET['format'] == $name){
+										echo("selected");
+									}
+									echo(">".ucfirst($name)."</option>");
+								}
+							}
+						?>
 					</select>
 				</div>
 				<input type="text" id="search-text" name="q" value="<?php echo $_GET['q']?>">
@@ -116,7 +135,7 @@
 								echo(listAuthors($book, TRUE));
 							echo("</div>");
 							echo("<div class='book-row'>");
-								echo("<p>Format: ".htmlentities($book['format'])."</p>");
+								echo("<p>Format: ".htmlentities($book['Format'])."</p>");
 							echo("</div>");
 							echo("<div class='book-row'>");
 								echo("<p>Available Copies: ".htmlentities($book['available_copies'])."/".htmlentities($book['total_copies'])."</p>");

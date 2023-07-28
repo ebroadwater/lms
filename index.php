@@ -8,6 +8,12 @@
 	if ($loggedin){
 		$staff = $_SESSION['is_staff'];
 	}
+	$formats_list = listFormats($pdo);
+	if ($formats_list === false){
+		$_SESSION['error'] = "Unable to fetch formats";
+		header("Location: index.php");
+		return;
+	}
 ?>
 <!DOCTYPE html>
 <html>
@@ -56,9 +62,17 @@
 					<label for="format-type" class="above">Format:</label>
 					<select name="format" id="format-type" class="above">
 						<option value="all">All Formats</option>
-						<option value="book">Book</option>
+						<!-- <option value="book">Book</option>
 						<option value="title">eBook</option>
-						<option value="audiobook">Audiobook</option>
+						<option value="audiobook">Audiobook</option> -->
+						<?php
+							if ($formats_list){
+								foreach($formats_list as $format){
+									$name = htmlentities($format['name']);
+									echo("<option value='".$name."'>".ucfirst($name)."</option>");
+								}
+							}
+						?>
 					</select>
 				</div>
 				<input type="text" id="search-text" name="q">

@@ -52,6 +52,12 @@
 			header("Location: ../index.php");
 			return;
 	}
+	$formats_list = listFormats($pdo);
+	if ($formats_list === false){
+		$_SESSION['error'] = "Unable to fetch formats";
+		header("Location: add.php");
+		return;
+	}
 
 ?>
 <!DOCTYPE html>
@@ -116,9 +122,14 @@
 				<p><strong>Available Copies: </strong><input type="number" name="available_copies"></p>
 				<label for="format-type">Type:</label>
 				<select name="format" id="format-type">
-					<option value="book">Book</option>
-					<option value="ebook">eBook</option>
-					<option value="audiobook">Audiobook</option>
+					<?php
+						if ($formats_list){
+							foreach($formats_list as $format){
+								$name = htmlentities($format['name']);
+								echo("<option value='".$name."'>".ucfirst($name)."</option>");
+							}
+						}
+					?>
 				</select>
 				<p><strong>Description (optional): </strong><br><br><textarea name="description" rows="8" cols="80"></textarea></p>
 				<input type="hidden" name="MAX_FILE_SIZE" value="4000000" />
