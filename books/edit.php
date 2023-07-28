@@ -27,6 +27,12 @@
 		unset($_SESSION['from']);
 		return;
 	}
+	$formats_list = listFormats($pdo);
+	if ($formats_list === false){
+		$_SESSION['error'] = "Unable to fetch formats";
+		header("Location: index.php");
+		return;
+	}
 
 	$author_list_start = explode(";", $book['Authors']);
 	$author_id_list = explode(",", $book['Author_ids']);
@@ -77,16 +83,18 @@
 			}
 			//Update Publisher
 			$publisher_id = insertPublisher($pdo);
+			//Get Format
+			$format = getFormat($pdo, $_POST['format']);
 			//Update Book
 			$stmt = $pdo->prepare('UPDATE Book SET title= :ti, publisher_id=:pid, year_published=:yr, total_copies=:tc,
-									available_copies=:ac, format=:fo WHERE book_id=:bid');
+									available_copies=:ac, format_id=:fo WHERE book_id=:bid');
 			$stmt->execute(array(
 				':ti' => $_POST['title'], 
 				':pid' => $publisher_id, 
 				':yr' => $_POST['yr_published'], 
 				':tc' => $_POST['total_copies'], 
 				':ac' => $_POST['available_copies'], 
-				':fo' => $_POST['format'], 
+				':fo' => $format['format_id'],
 				':bid' => $book_id
 			));
 			//Delete from BookAuthor and BookGenre
@@ -216,9 +224,18 @@
 				</p>
 				<label for="format-type-edit">Type:</label>
 				<select name="format" id="format-type-edit">
-					<option value="book"<?php if (htmlentities($book['format']) == "book"){ echo("selected");}?>>Book</option>
-					<option value="ebook"<?php if (htmlentities($book['format']) == "ebook"){ echo("selected");}?>>eBook</option>
-					<option value="audiobook"<?php if (htmlentities($book['format']) == "audiobook"){ echo("selected");}?>>Audiobook</option>
+					<?php
+							if ($formats_list){
+								foreach($formats_list as $format){
+									$name = htmlentities($format['name']);
+									echo("<option value='".$name."' ");
+									if ($book['Format'] == $name){
+										echo("selected");
+									}
+									echo(">".ucfirst($name)."</option>");
+								}
+							}
+						?>
 				</select>
 				<p>
 					<strong>Description (optional): </strong><br><br>

@@ -4,9 +4,7 @@
 	require_once "../util.php";
 
 	if (!isset($_SESSION['user_id'])){
-		if (isset($_GET['from'])){
-			$_SESSION['from'] = $_GET['from'];
-		}
+		$_SESSION['from'] = $_SERVER['REQUEST_URI'];
 		header("Location: ../login.php");
 		return;
 	}

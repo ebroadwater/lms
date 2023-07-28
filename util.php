@@ -96,8 +96,10 @@ function insertPublisher($pdo){
 function insertBook($pdo, $image_file){
 	//Publisher
 	$publisher_id = insertPublisher($pdo);
+	//Get Format
+	$format = getFormat($pdo, $_POST['format']);
 	//Book
-	$stmt = $pdo->prepare('INSERT INTO Book (title, publisher_id, year_published, total_copies, available_copies, format) 
+	$stmt = $pdo->prepare('INSERT INTO Book (title, publisher_id, year_published, total_copies, available_copies, format_id) 
 							VALUES (:ti, :pid, :yr, :co, :av, :fo)');
 	$stmt->execute(array(
 		'ti' => $_POST['title'], 
@@ -105,7 +107,7 @@ function insertBook($pdo, $image_file){
 		'yr' => $_POST['yr_published'], 
 		':co' => $_POST['total_copies'], 
 		':av' => $_POST['available_copies'], 
-		':fo' => $_POST['format']
+		':fo' => $format['format_id']
 	));
 	$book_id = $pdo->lastInsertId();
 	//Description, series, edition
@@ -238,19 +240,21 @@ function insertImage($pdo, $image_file, $book_id){
 	}
 }
 function makeSearch($pdo, $secondpart, $query, $for){
-	$firstpart = "SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format,
+	$firstpart = "SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format_id,
 	GROUP_CONCAT(DISTINCT d.name) Publisher, GROUP_CONCAT(DISTINCT c.name) Genres, 
 	GROUP_CONCAT(DISTINCT f.last_name, ', ', f.first_name, ': ', f.is_translator SEPARATOR ';') Authors, 
-	GROUP_CONCAT(DISTINCT f.author_id) Author_ids
+	GROUP_CONCAT(DISTINCT f.author_id) Author_ids, 
+	GROUP_CONCAT(DISTINCT g.name) Format
 	FROM Book a INNER JOIN BookGenre b ON a.book_id = b.book_id INNER JOIN Genre c ON b.genre_id = c.genre_id 
 	INNER JOIN Publisher d ON a.publisher_id= d.publisher_id INNER JOIN BookAuthor e ON e.book_id = a.book_id 
-	INNER JOIN Author f ON f.author_id = e.author_id ";
+	INNER JOIN Author f ON f.author_id = e.author_id INNER JOIN Format g ON g.format_id=a.format_id ";
 
 	$thirdpart = "GROUP BY a.book_id, a.title, a.series, a.year_published, 
-	a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format";
+	a.total_copies, a.available_copies, a.description, a.image_file, a.edition";
 
 	if ($secondpart == ""){
 		$stmt = $pdo->prepare($firstpart.$thirdpart);
+		//All formats
 		if ($for == ""){
 			$stmt->execute();
 		}
@@ -314,14 +318,15 @@ function makeSearch($pdo, $secondpart, $query, $for){
 	}
 }
 function getBook($pdo, $book_id){
-	$stmt = $pdo->prepare("SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format,
+	$stmt = $pdo->prepare("SELECT a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format_id,
 	GROUP_CONCAT(DISTINCT d.name) Publisher, GROUP_CONCAT(DISTINCT c.name) Genres, 
 	GROUP_CONCAT(DISTINCT f.last_name, ', ', f.first_name, ': ', f.is_translator SEPARATOR ';') Authors, 
-	GROUP_CONCAT(DISTINCT f.author_id) Author_ids
+	GROUP_CONCAT(DISTINCT f.author_id) Author_ids, 
+	GROUP_CONCAT(DISTINCT g.name) Format
 	FROM Book a INNER JOIN BookGenre b ON a.book_id = b.book_id INNER JOIN Genre c ON b.genre_id = c.genre_id 
 	INNER JOIN Publisher d ON a.publisher_id= d.publisher_id INNER JOIN BookAuthor e ON e.book_id = a.book_id 
-	INNER JOIN Author f ON f.author_id = e.author_id WHERE a.book_id= :bid 
-	GROUP BY a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition, a.format");
+	INNER JOIN Author f ON f.author_id = e.author_id INNER JOIN Format g ON g.format_id = a.format_id WHERE a.book_id= :bid 
+	GROUP BY a.book_id, a.title, a.series, a.year_published, a.total_copies, a.available_copies, a.description, a.image_file, a.edition");
 
 	$stmt->execute(array(
 		':bid' => $book_id
@@ -364,5 +369,20 @@ function listAuthors($book, $is_dir){
 		$index++;
 	}
 	return $str;
+}
+function listFormats($pdo){
+	$stmt = $pdo->prepare('SELECT * FROM Format ORDER BY format_id');
+	$stmt->execute();
+	$formats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	return $formats;
+}
+function getFormat($pdo, $name){
+	$stmt = $pdo->prepare('SELECT * FROM Format WHERE `name`=:fo');
+	$stmt->execute(array(
+		':fo' => $name
+	));
+	$format = $stmt->fetch(PDO::FETCH_ASSOC);
+	$stmt->closeCursor();
+	return $format;
 }
 //ALTER TABLE some_table AUTO_INCREMENT=1

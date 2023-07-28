@@ -44,7 +44,7 @@
 				echo("<th>Role</th>");
 				echo("<th>Actions</th></tr>");
 				foreach($members as $mem){
-					echo("<td>".htmlentities($mem['first_name'])." ".htmlentities($mem['last_name']).'</a> ');
+					echo("<tr><td>".htmlentities($mem['first_name'])." ".htmlentities($mem['last_name']));
 					echo("</td><td>".htmlentities($mem['email']));
 					echo("</td><td>");
 					
@@ -56,7 +56,9 @@
 						$role = "Member";
 					}
 					echo($role."</td><td>");
-					echo("<div class='actions'>");
+					echo("<div class='actions' style='justify-content:center;'>");
+					echo('<a href="members/profile.php?user_id='.$mem['user_id'].'" class="edit-button" style="color:blue;">View</a>');
+					echo(' | ');
 					echo('<a href="members/members-edit.php?user_id='.$mem['user_id'].'" class="edit-button">Edit</a>');
 					echo(' | ');
 					echo('<form><input type="button" name="delete" class="delete-button" id="del-btn" value="Delete" onclick="deleteAlert('.$mem['user_id'].')"></form>');

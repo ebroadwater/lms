@@ -26,9 +26,13 @@
 			$_SESSION['last_name'] = $row['last_name'];
 			$_SESSION['is_staff'] = $row['is_staff'];
 
+			$redirect = NULL;
 			if (isset($_SESSION['from'])){
-				header("Location: ". $_SESSION['from']);
+				$redirect = $_SESSION['from'];
 				unset($_SESSION['from']);
+			}
+			if (isset($redirect)){
+				header("Location: ".$redirect);
 				return;
 			}
 			header("Location: index.php");
