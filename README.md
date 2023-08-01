@@ -1,6 +1,6 @@
 # lms
-Basic library management system built with PHP. 
-Practice building CRUD application. 
+Basic library management system built with PHP.
+Practice building CRUD application interacting with MySQL DB.
 
 Users can:
 - Search for books in the catalog by format, title, author, series, or genre
