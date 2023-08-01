@@ -154,6 +154,7 @@
 						echo("<div style='display:flex; flex-direction:column; justify-content:center; align-items:center;'>");
 							echo("<form method='GET' action='books/place_hold.php'>");
 								echo("<input type='hidden' name='book_id' value='".htmlentities($book['book_id'])."'>");
+								echo("<input type='hidden' name='user_id' value='".$_SESSION['user_id']."'>");
 								echo("<input type='submit' value='Place Hold' name='place_hold' class='button' style='margin-bottom:20px;width:100px;'>");
 								$_SESSION['from'] = "../catalog.php?type=".htmlentities($_GET['type'])."&format=".htmlentities($_GET['format'])."&q=".htmlentities($_GET['q'])."&search=Search";
 							echo("</form>");

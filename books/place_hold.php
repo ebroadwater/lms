@@ -122,11 +122,11 @@
 		<?php 
 			flashMessagesCenter();
 		?>
-		<p style="font-size:1.2em; text-align:center; margin-top:80px;">
+		<h2 style="font-size:1.2em; text-align:center; margin-top:80px;">
 			<?php 
 				echo listBookandAuthor($pdo, $_REQUEST['book_id']);
 			?> 
-		</p>
+		</h2>
 		<br>
 		<?php 
 			if ($have_hold){
@@ -144,9 +144,9 @@
 				echo('<p style="text-align:center;"><strong>Note: </strong>Once confirmed, you will have <strong>3 days</strong> to pick it up.</p>');
 				echo('<form method="POST" style="text-align:center;">');
 				echo('<p>Expires: <strong>'.date_format($date, "l, m-d-Y g:i A (T)").'</strong></p>');
-				echo('<input type="hidden" name="book_id" value="'.htmlentities($_REQUEST['book_id']).'">');
-				echo('<input type="submit" name="submit" value="Submit">');
-				echo('<input type="submit" name="cancel" value="Cancel" style="margin-left:10px;"></form>');
+				echo('<br><input type="hidden" name="book_id" value="'.htmlentities($_REQUEST['book_id']).'">');
+				echo('<input type="submit" name="submit" value="Submit" class="button">');
+				echo('<input type="submit" name="cancel" value="Cancel" class="button" style="margin-left:10px;"></form>');
 			}
 		?>
 		</div>

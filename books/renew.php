@@ -107,11 +107,11 @@
 		<?php 
 			flashMessagesCenter();
 		?>
-		<p style="font-size:1.2em; text-align:center; margin-top:70px;">
+		<h2 style="font-size:1.2em; text-align:center; margin-top:70px;">
 			<?php 
 				echo listBookandAuthor($pdo, $_REQUEST['book_id']);
 			?> 
-		</p>
+		</h2>
 		<br>
 		<div style="border:solid 1px black; width:40%; margin:auto; padding:30px; margin-top:25px; text-align:center;">
 		<?php
@@ -127,8 +127,8 @@
 				echo('<p style="margin-top:35px; margin-bottom:25px;">Due Date: <strong>'.$readable_date.'</strong></p>');
 				echo('<form method="POST" style="text-align:center;">');
 				echo('<input type="hidden" name="book_id" value="'.htmlentities($_REQUEST['book_id']).'">');
-				echo('<input type="submit" name="renew" value="Renew">');
-				echo('<input type="submit" name="cancel" value="Cancel" style="margin-left:10px;"></form>');
+				echo('<input type="submit" name="renew" value="Renew" class="button">');
+				echo('<input type="submit" name="cancel" value="Cancel" style="margin-left:10px;" class="button"></form>');
 			}
 		?>
 		</div>
