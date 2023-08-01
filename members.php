@@ -26,7 +26,7 @@
 				echo('<a href="index.php">Home</a>');
 				echo('<a href="books/add.php">Add Book</a>');
 				echo('<a href="members/member-add.php">Add Member</a>');
-				echo('<a href="members.php">Members</a>');
+				echo('<a href="members/profile.php?user_id='.$_SESSION['user_id'].'"> My Profile</a>');
 				echo('<a href="logout.php">Log Out</a>');
 			?>
 			</li>
@@ -57,11 +57,11 @@
 					}
 					echo($role."</td><td>");
 					echo("<div class='actions' style='justify-content:center;'>");
-					echo('<a href="members/profile.php?user_id='.$mem['user_id'].'" class="edit-button" style="color:blue;">View</a>');
+					echo('<a href="members/profile.php?user_id='.$mem['user_id'].'" class="button" style="width:60px; margin:0; font-size:0.9em;">View</a>');
 					echo(' | ');
-					echo('<a href="members/members-edit.php?user_id='.$mem['user_id'].'" class="edit-button">Edit</a>');
+					echo('<a href="members/members-edit.php?user_id='.$mem['user_id'].'" class="button" id="edit-hover" style="width:60px; margin:0;font-size:0.9em;">Edit</a>');
 					echo(' | ');
-					echo('<form><input type="button" name="delete" class="delete-button" id="del-btn" value="Delete" onclick="deleteAlert('.$mem['user_id'].')"></form>');
+					echo('<form><input type="button" name="delete" class="button" id="book-del-btn" style="width:60px; margin:0;font-size:0.9em; text-align:center;" value="Delete" onclick="deleteAlert('.$mem['user_id'].')"></form>');
 					echo("</div>");
 					echo("</td></tr>");
 				}

@@ -28,19 +28,20 @@
 	$book = getBook($pdo, $_GET['book_id']);
 	if ($book === false){
 		$_SESSION['error'] = "Unable to load book";
-		header("Location: view.php?book_id=".$_REQUEST['book_id']);
+		header("Location: ../members/profile.php?user_id=".$_REQUEST['user_id']);
 		return;
 	}
 	if (isset($_POST['cancel'])){
-		header("Location: view.php?book_id=".$_REQUEST['book_id']);
+		header("Location: ../members/profile.php?user_id=".$_REQUEST['user_id']);
 		return;
 	}
 	$date = new DateTime();
 	$date->setTimezone(new DateTimeZone('America/New_York'));
 	$start = date_format($date, "Y-m-d H:i:s");
+	$date->modify('+14 day');
+	$new_date = null;
 
 	$is_checked_out = false;
-	$is_overdue = false;
 	$stmt = $pdo->prepare('SELECT * FROM Checkout WHERE user_id=:uid AND book_id=:bid AND is_returned=:ir');
 	$stmt->execute(array(
 		':uid' => $_REQUEST['user_id'], 
@@ -50,29 +51,31 @@
 	$result = $stmt->fetch(PDO::FETCH_ASSOC);
 	if (count($result) > 0){
 		$is_checked_out = true;
-		//Check if overdue
-		if ($result['end_time'] < $start){
-			$is_overdue = true;
-		}
+		$exp = strtotime(htmlentities($result['end_time']));
+		// $renewed_date = new DateTime($exp);
+		$renewed_date = new DateTime('@'.$exp);
+		$renewed_date->modify('+14 days');
+		$new_date = date_format($renewed_date, "Y-m-d H:i:s");
+		$readable_date = date_format($renewed_date, "l, m-d-Y g:i A");
 	}
-	if (isset($_POST['return'])){
+
+	if (isset($_POST['renew'])){
 		if (!$is_checked_out){
 			$_SESSION['error'] = "User does not have book checked out. Cannot return.";
 			header("Location: ".$_SERVER['REQUEST_URI']);
 			return;
 		}
 		//Update Checkout
-		$stmt = $pdo->prepare('UPDATE Checkout SET end_time=:et, is_returned=:ir WHERE checkout_id=:cid');
+		$stmt = $pdo->prepare('UPDATE Checkout SET end_time=:et WHERE checkout_id=:cid');
 		$stmt->execute(array(
-			':et' => $start, 
-			':ir' => 1, 
+			':et' => $new_date,  
 			':cid' => htmlentities($result['checkout_id'])
 		));
 		//Update available copies
 		$copies = htmlentities($book['available_copies']) + 1;
 		updateAvailableCopies($pdo, $copies, $book['book_id']);
 
-		$_SESSION['success'] = "Book returned successfully";
+		$_SESSION['success'] = "Book renewed successfully";
 		header("Location: ../members/profile.php?user_id=".htmlentities($_REQUEST['user_id']));
 		return;
 	}
@@ -81,7 +84,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Return <?php echo $book['title']?></title>
+		<title>Renew <?php echo $book['title']?></title>
 		<?php require_once "../head.php";?>
 		<link rel='stylesheet' href='../static/css/starter.css'>
 	</head>
@@ -100,7 +103,7 @@
 			?>
 			</li>
 		</ul>
-		<h1>Return</h1>
+		<h1>Renew</h1>
 		<?php 
 			flashMessagesCenter();
 		?>
@@ -114,22 +117,17 @@
 		<?php
 			//If not avaialable 
 			if (!$is_checked_out){
-				echo("<p style='color:red; text-align:center;'>WARNING: <br><br>Cannot return book because user does not have it checked out. ");
+				echo("<p style='color:red; text-align:center;'>WARNING: <br><br>Cannot renew book because user does not have it checked out. ");
 				echo("Please check later.</p>");
 			}
 			else{
-				echo('<p style="text-align:center;"><strong>Are you sure you want to return this book? </strong></p>');
-				if ($is_overdue){
-					$date1 = DateTime::createFromFormat ( "Y-m-d H:i:s", $result["end_time"] );
-					$fine = $date1->diff($date);
-					$fine = $fine->days;
-					echo('<p style="text-align:center; margin-top: 30px; line-height:30px; color:red;">OVERDUE</p>');
-					echo('<p style="text-align:center; margin-top: 15px;">There is a $1.00 fine for each day past the due date.</p>');
-					echo('<p style="text-align:center; margin-top: 15px; line-height:30px;">Fine: <strong>$'.$fine.'.00</strong></p>');
-				}
+				echo('<p style="text-align:center;"><strong>Are you sure you want to renew this book? </strong></p><br>');
+				echo('<p style="text-align:center;"><strong>Note: </strong>Once confirmed, you will have it checked out for <strong>2 more weeks</strong>.</p>');
+				echo('<p style="text-align:center; margin-top: 30px; line-height:10px;">If returned late, you will be fined <strong>$1.00</strong> for each extra day.</p>');
+				echo('<p style="margin-top:35px; margin-bottom:25px;">Due Date: <strong>'.$readable_date.'</strong></p>');
 				echo('<form method="POST" style="text-align:center;">');
 				echo('<input type="hidden" name="book_id" value="'.htmlentities($_REQUEST['book_id']).'">');
-				echo('<input type="submit" name="return" value="Return">');
+				echo('<input type="submit" name="renew" value="Renew">');
 				echo('<input type="submit" name="cancel" value="Cancel" style="margin-left:10px;"></form>');
 			}
 		?>

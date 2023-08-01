@@ -1,12 +1,28 @@
 h1, h4{
 	text-align: center;
+	color: #4C061D;
 }
 body{
 	padding: 10px;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background-color: #B4C292;
+	color: #3B3923;
+}
+#type-text, #format-type, #type-text-view, #format-type-view{
+	background-color: #d5d5d5;
+	border: darkgray;
+}
+input, textarea{
+	background-color: #d5d5d5;
+	border:solid 1px darkgray;
+}
+input[type='file']{
+	background-color: #B4C292;
+	border:none;
 }
 .above{
 	display: block;
+	color:#3B3923;
 }
 .nav{
 	/* display: inline; */
@@ -18,10 +34,17 @@ body{
 .nav-link{
 	float: right;
 	margin-right:20px;
+	
 }
 .nav-link a{
 	text-decoration: none;
 	margin-left:20px;
+	/* color: #8F4020; */
+	color: #D17A22;
+}
+.nav-link a:hover{
+	/* color: #D17A22; */
+	color: #8F4020;
 }
 .login-page{
 	margin-left: 100px;
@@ -33,6 +56,15 @@ body{
 	align-items: center;
 	height: 250px;
 	margin-bottom:0;
+	/* color: #B8B984; */
+}
+#search-text{
+	background-color:#d5d5d5;
+	/* background-color: #B4C292; */
+	border: none;
+	display: flex;
+	justify-content: center;
+	/* border-radius: 5px; */
 }
 .search-bar-view{
 	display: flex;
@@ -51,7 +83,9 @@ body{
 	margin-left: 5px;
 }
 .button{
-	background-color: #0693e3;
+	/* background-color: #0693e3; */
+	/* background-color: #93A6AA; */
+	background-color: #736F4E;
 	border-radius: 5px;
 	height: 25px;
 	border: none;
@@ -59,17 +93,37 @@ body{
 	color: white;
 }
 .button:hover{
-	background-color:#0580c7;
+	/* background-color:#0580c7; */
+	background-color: #3B3923;
+}
+#edit-hover{
+	background-color:#004d00; 
+	margin-bottom:20px;
+	width:100px;
+	text-align: center;
+}
+#edit-hover:hover{
+	background-color: #008000;
+}
+#book-del-btn{
+	background-color:#990000; 
+	margin-bottom:20px;
+	width:100px;
+}
+#book-del-btn:hover{
+	background-color: #cc0000;
 }
 .admin-view{
 	display: flex;
 	flex-direction: column;
-	border: solid 1px black;
+	border: solid 1px #1C0F13;
 	/* justify-content: center; */
 }
 .admin-view-row{
 	display: flex;
-	border: solid 1px black;
+	border: solid 1px #1C0F13;
+	justify-content: center;
+	/* text-align: center; */
 }
 .home-view-row{
 	margin-top: 40px;
@@ -100,9 +154,7 @@ body{
 }
 a{
 	text-decoration: none;
-}
-a:hover{
-	text-decoration: underline;
+	/* color:#D58936; */
 }
 .member-page{
 	display: flex;
@@ -123,32 +175,7 @@ th, td {
 	border-bottom: 1px solid #ddd;
 	text-align: center;
 }
-tr:hover {background-color: lightblue;}
-
-.delete-button{
-	border: none;
-	border-radius: 5px;
-	color: red;
-}
-.delete-button:hover, .edit-button:hover{
-	background-color:darkgray;
-}
-.edit-button{
-	color:green;
-	text-decoration: none;
-	background-color: hsl(0, 0%, 94%);
-	text-align: center;
-	border: none;
-	padding-top: 1px;
-	padding-bottom: 1px;
-	padding-left:6px;
-	padding-right: 6px;
-	border-radius: 5px;
-	font-size: 0.83em;
-}
-.edit-button:link{
-	text-decoration: none;
-}
+tr:hover {background-color: #D17A22;}
 .actions{
 	display: flex;
 	gap: 20px;
@@ -156,20 +183,30 @@ tr:hover {background-color: lightblue;}
 }
 .book-row{
 	display: flex;
-	border-top: solid 1px red;
-	border-bottom: solid 1px red;
+	/* border-top: solid 1px red; */
+	/* border-bottom: solid 1px red; */
 	justify-content: center;
+	align-items: left;
+	padding-right:18px;
 }
 .book-page{
 	display: flex;
 	flex-direction: column;
-	border: solid 1px black;
-	width: 85%;
+	border: solid 1px #1C0F13;
+	width: 75%;
 	margin: auto;
 }
 .book-info{
-	border: solid 1px blue;
+	/* border: solid 1px blue; */
 	display: flex;
 	flex-direction: column;
-	width: 90%;
+	width: 75%;
+	margin-bottom:10px;
+	justify-content: center;
+}
+h3 a{
+	color:#8F4020;
+}
+p a{
+	color: #af661d;
 }

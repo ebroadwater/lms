@@ -71,7 +71,7 @@
 						echo('<a href="members/member-add.php">Add Member</a>');
 						echo('<a href="members.php">Members</a>');
 					}
-					echo('<a href="members/members-edit.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
+					echo('<a href="members/profile.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
 					echo('<a href="logout.php">Log Out</a>');
 				}
 				else{
@@ -89,7 +89,7 @@
 			<div class="search-bar-view">
 				<div style="float:left;margin-right:20px;">
 					<label for="type-text-view" class="above">Type:</label>
-					<select name="type" id="type-text-view" class="above">
+					<select name="type" id="type-text-view" class="above" style="background-color:#d5d5d5;>
 						<option value="keyword">Keyword</option>
 						<option value="title"<?php if ($_GET['type'] == "title"){ echo("selected");}?>>Title</option>
 						<option value="author"<?php if ($_GET['type'] == "author"){ echo("selected");}?>>Author</option>
@@ -99,7 +99,7 @@
 				</div>
 				<div style="float:left;">
 					<label for="format-type-view" class="above">Format:</label>
-					<select name="format" id="format-type-view" class="above">
+					<select name="format" id="format-type-view" class="above" style="background-color:#d5d5d5;>
 						<option value="all"<?php if ($_GET['format'] == "all"){ echo("selected");}?>>All Formats</option>
 						<?php
 							if ($formats_list){
@@ -126,32 +126,54 @@
 		<div class="book-page">
 			<?php 
 				foreach($book_list as $book){
-					echo("<div class='book-row'>");
+					echo("<div class='book-row' style='border-bottom:1px solid #1C0F13; align-items:center;'>");
+						echo("<div style='margin-top:10px; margin-bottom:10px;'>");
+							if (isset($book['image_file'])){
+								$file_name = htmlentities($book['image_file']);
+								if (strlen($file_name) > 0 && $file_name !== NULL){
+									echo("<img src='static/images/".$file_name."' width='130' height='200' style='padding-left:60px;margin-right:15px;'/>");
+								}
+							}
+						echo("</div>");
 						echo("<div class='book-info'>");
 							echo("<div class='book-row'>");
-								echo("<h4><a href='books/view.php?book_id=".htmlentities($book['book_id'])."'>".htmlentities($book['title'])."</a></h4>");
+								echo("<h3><a href='books/view.php?book_id=".htmlentities($book['book_id'])."'>".htmlentities($book['title'])."</a></h3>");
 							echo("</div>");
 							echo("<div class='book-row'>");
 								echo(listAuthors($book, TRUE));
 							echo("</div>");
 							echo("<div class='book-row'>");
-								echo("<p>Format: ".htmlentities($book['Format'])."</p>");
+								echo("<p>Format: ".ucfirst(htmlentities($book['Format']))."</p>");
 							echo("</div>");
 							echo("<div class='book-row'>");
-								echo("<p>Available Copies: ".htmlentities($book['available_copies'])."/".htmlentities($book['total_copies'])."</p>");
+								echo("<p><strong>Available Copies: ".htmlentities($book['available_copies'])."/".htmlentities($book['total_copies'])."</strong></p>");
 							echo("</div>");
-							if ($staff){
-								echo("<div class='book-row'>");
-									// echo("<a class='edit-button' href='books/edit.php?book_id=".htmlentities($book['book_id'])."'>Edit</a>");
-									echo("<form method='GET' action='books/edit.php'>");
-										echo("<input type='hidden' name='book_id' value='".htmlentities($book['book_id'])."'>");
-										echo("<input type='submit' value='Edit' name='edit'>");
-										$_SESSION['from'] = "../catalog.php?type=".htmlentities($_GET['type'])."&format=".htmlentities($_GET['format'])."&q=".htmlentities($_GET['q'])."&search=Search";
-									echo("</form>");
-									echo('<form><input type="button" name="delete" id="book-del-btn" value="Delete" onclick="deleteAlert('.$book['book_id'].')"></form>');
-								echo("</div>");
-								
-							}
+						echo("</div>");
+						echo("<div style='margin-top:25px; padding-right:60px;'>");
+					
+						echo("<div style='display:flex; flex-direction:column; justify-content:center; align-items:center;'>");
+							echo("<form method='GET' action='books/place_hold.php'>");
+								echo("<input type='hidden' name='book_id' value='".htmlentities($book['book_id'])."'>");
+								echo("<input type='submit' value='Place Hold' name='place_hold' class='button' style='margin-bottom:20px;width:100px;'>");
+								$_SESSION['from'] = "../catalog.php?type=".htmlentities($_GET['type'])."&format=".htmlentities($_GET['format'])."&q=".htmlentities($_GET['q'])."&search=Search";
+							echo("</form>");
+							echo("<form method='GET' action='books/checkout.php'>");
+								echo("<input type='hidden' name='book_id' value='".htmlentities($book['book_id'])."'>");
+								echo("<input type='hidden' name='user_id' value='".$_SESSION['user_id']."'>");
+								echo("<input type='submit' value='Check Out' name='checkout' class='button' style='margin-bottom:20px; width:100px;'>");
+								$_SESSION['from'] = "../catalog.php?type=".htmlentities($_GET['type'])."&format=".htmlentities($_GET['format'])."&q=".htmlentities($_GET['q'])."&search=Search";
+							echo("</form>");
+						echo("</div>");
+						if ($staff){
+							echo("<div style='display:flex; flex-direction:column; justify-content:center; align-items:center;'>");
+								echo("<form method='GET' action='books/edit.php'>");
+									echo("<input type='hidden' name='book_id' value='".htmlentities($book['book_id'])."'>");
+									echo("<input type='submit' value='Edit' name='edit' class='button' id='edit-hover'>");
+									$_SESSION['from'] = "../catalog.php?type=".htmlentities($_GET['type'])."&format=".htmlentities($_GET['format'])."&q=".htmlentities($_GET['q'])."&search=Search";
+								echo("</form>");
+								echo('<form><input type="button" class="button" name="delete" id="book-del-btn" value="Delete" onclick="deleteAlert('.$book['book_id'].')"></form>');
+							echo("</div>");
+						}
 						echo("</div>");
 					echo("</div>");
 					$count++;

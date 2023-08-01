@@ -385,4 +385,71 @@ function getFormat($pdo, $name){
 	$stmt->closeCursor();
 	return $format;
 }
+function listBookandAuthor($pdo, $book_id){
+	$book = getBook($pdo, $book_id);
+
+	$author_list_start = explode(";", $book['Authors']);
+	$author_id_list = explode(",", $book['Author_ids']);
+	$author_translator_list = array();
+	$author_list = array();
+	foreach($author_list_start as $au){
+		$one = explode(":", $au);
+		array_push($author_translator_list, $one[1]);
+		array_push($author_list, $one[0]);
+	}
+	$str = "";
+	$str = $str."<i>";
+	$str = $str.htmlentities($book['title']);
+	$str = $str." </i>- ";
+
+	$index = 0;
+	foreach($author_list as $author){
+		$name = explode(",", $author);
+		$fname = htmlentities($name[1]);
+		$lname = htmlentities($name[0]);
+		$str = $str.$fname." ".$lname;
+		if ($author_translator_list[$index] == 1){
+			$str = $str." (Translator)";
+		}
+		if ($index + 1 < count($author_list)){
+			$str = $str." and ";
+		}
+		$index++;
+	}
+	return $str;
+}
+function updateAvailableCopies($pdo, $copies, $book_id){
+	$stmt = $pdo->prepare('UPDATE Book SET available_copies=:ac WHERE book_id=:bid');
+	$stmt->execute(array(
+		':ac' => $copies, 
+		':bid' => $book_id
+	));
+}
+function listInfo($book){
+	$author_list_start = explode(";", $book['Authors']);
+	$author_id_list = explode(",", $book['Author_ids']);
+	$author_translator_list = array();
+	$author_list = array();
+	foreach($author_list_start as $au){
+		$one = explode(":", $au);
+		array_push($author_translator_list, $one[1]);
+		array_push($author_list, $one[0]);
+	}
+	echo("<p><a href='../books/view.php?book_id=".htmlentities($book['book_id'])."'>".htmlentities($book['title'])."</a> - ");
+	$index = 0;
+	foreach($author_list as $author){
+		$name = explode(",", $author);
+		$fname = htmlentities($name[1]);
+		$lname = htmlentities($name[0]);
+		echo($fname." ".$lname);
+		if ($author_translator_list[$index] == 1){
+			echo " (Translator)";
+		}
+		if ($index + 1 < count($author_list)){
+			echo(" and ");
+		}
+		$index++;
+	}
+	echo("</p>");
+}
 //ALTER TABLE some_table AUTO_INCREMENT=1

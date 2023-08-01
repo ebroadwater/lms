@@ -3,7 +3,7 @@
 	require_once "../pdo.php";
 	require_once "../util.php";
 
-	if (!isset($_SESSION['user_id']) || $_SESSION['is_staff'] === false){
+	if (!isset($_SESSION['user_id']) || $_SESSION['is_staff'] == false){
 		die("ACCESS DENIED");
 		return;
 	}
