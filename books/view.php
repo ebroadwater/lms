@@ -53,64 +53,77 @@
 			flashMessagesCenter();
 		?>
 		<?php 
+			echo("<div style='display:flex;flex-direction:column;'>");
+			echo("<div style='display:flex;'>");
 			if (isset($book['image_file'])){
 				$file_name = htmlentities($book['image_file']);
 				if (strlen($file_name) > 0 && $file_name !== NULL){
-					echo("<img src='../static/images/".$file_name."' width='170' height='250'/>");
+					echo("<img src='../static/images/".$file_name."' width='300' height='450'/>");
 				}
 			}
+			echo("<div style='display:flex; margin-left:80px; width:80%; align-items:center;'>");
 		?>
-		<div>
-			<p>Author(s): <?php echo(listAuthors($book, FALSE));?> </p>
+		<div style="width:50%; display:flex; flex-direction:column;">
+		<h3 style="text-align:left;">Author(s): </h3> <?php echo(listAuthors($book, FALSE));?><br>
+		<h3 style="text-align:left">Format:</h3> <?php echo("<p>".ucfirst(htmlentities($book['Format']))."</p>");?>
+		<h3 style="text-align:left;">Available Copies:</h3>
+		<?php 
+			echo("<p>".htmlentities($book['available_copies'])." of ".htmlentities($book['total_copies'])." available </p>");
+		?>
 		</div>
-		<p>Format: <?php echo(htmlentities($book['Format']));?></p>
-		<h4>Available Copies:</h4>
+		<div style="width:50%; padding-right:15px; display:flex; flex-direction:column;">
 		<?php 
-			echo("<p>".htmlentities($book['available_copies'])." of ".htmlentities($book['total_copies'])." available");
-		?>
-		<?php 
-			if (htmlentities($book['series']) !== null){
-				echo("<h4>Series:</h4>");
+			if (htmlentities($book['series']) !== null && htmlentities($book['series']) !== ""){
+				echo("<h3 style='text-align:right;'>Series:</h3>");
 				echo("<a href='../catalog.php?type=series&q=".$book['series']."&search=Search'>".htmlentities($book['series'])."</a>");
 			}
 		?>
-		<h4>Publisher:</h4>
+		<h3 style='text-align:left;'>Publisher:</h3>
 		<?php 
 			echo("<p>".htmlentities($book['Publisher'])." (".htmlentities($book['year_published']).")</p>");
 		?>
-		<h4>Edition:</h4>
 		<?php 
-			if (isset($book['edition'])){
+			if (htmlentities($book['edition']) !== null && htmlentities($book['edition']) !== ""){
+				echo('<h3 style="text-align:left;">Edition:</h3>');
 				echo("<p>".htmlentities($book['edition'])."</p>");
 			}
 		?>
-		<h4>Genres:</h4>
+		<h3 style='text-align:left;'>Genres:</h3>
 		<ul>
 		<?php 
 			$genres = explode(',', $book['Genres']);
 			foreach($genres as $genre){
 				echo("<li>".$genre."</li>");
 			}
+			echo("</div>");
+			echo("</div>");
 		?>
 		</ul>
+		</div>
+		<div style='display:flex;'>
+		<div style='display:block;'>
 		<h4>Description:</h4>
 		<?php 
-			echo("<p>".htmlentities($book['description'])."</p>");
+			echo("<p style='width:85%;text-align:center; margin:auto; font-size:1.2em;'>".htmlentities($book['description'])."</p>");
+			echo("</div>");
 		?>
+		</div>
+		<div style="display:flex; margin-top:25px; justify-content:center; text-align:center; gap:15px;">
 		<p>
 			<form method="GET" action="place_hold.php">
-				<input type="submit" value="Place Hold" name="place_hold">
+				<input type="submit" value="Place Hold" name="place_hold" class="button" style="width:100px;">
 				<input type="hidden" value="<?php echo htmlentities($book['book_id'])?>" name="book_id">
 			</form>
 			<form method="GET" action="checkout.php">
-				<input type="submit" value="Check Out" name="checkout">
+				<input type="submit" value="Check Out" name="checkout" class="button" style="width:100px;">
 				<input type="hidden" value="<?php echo htmlentities($book['book_id'])?>" name="book_id">
 				<input type="hidden" value="<?php echo $_SESSION['user_id'];?>" name="user_id">
 			</form>
 			<!-- ADD RENEW OPTION -->
 		</p>
+		</div>
 		<?php
-			echo("<p><a href='".$back."'>Go Back</a></p>");
+			echo("<p style='text-align:center;'><a href='".$back."'>Go Back</a></p>");
 		?>
 	</body>
 </html>

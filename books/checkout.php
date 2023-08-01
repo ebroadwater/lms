@@ -140,11 +140,11 @@
 		<?php 
 			flashMessagesCenter();
 		?>
-		<p style="font-size:1.2em; text-align:center; margin-top:70px;">
+		<h2 style="font-size:1.2em; text-align:center; margin-top:70px;">
 			<?php 
 				echo listBookandAuthor($pdo, $_REQUEST['book_id']);
 			?> 
-		</p>
+		</h2>
 		<br>
 		<?php
 			if ($on_hold){
@@ -164,8 +164,8 @@
 				echo('<form method="POST" style="text-align:center;">');
 				echo('<p style="margin-top:35px; margin-bottom:25px;">Due Date: <strong>'.date_format($date, "l, m-d-Y g:i A (T)").'</strong></p>');
 				echo('<input type="hidden" name="book_id" value="'.htmlentities($_REQUEST['book_id']).'">');
-				echo('<input type="submit" name="submit" value="Submit">');
-				echo('<input type="submit" name="cancel" value="Cancel" style="margin-left:10px;"></form>');
+				echo('<input type="submit" name="submit" value="Submit" class="button">');
+				echo('<input type="submit" name="cancel" value="Cancel" style="margin-left:10px;" class="button"></form>');
 			}
 		?>
 		</div>
