@@ -14,7 +14,7 @@
 		header("Location: ../index.php");
 	}
 	if (isset($_POST['cancel'])){
-		header("Location: view.php?book_id=".$_GET['book_id']);
+		header("Location: view.php?book_id=".$_REQUEST['book_id']);
 		return;
 	}
 	$staff = 0;
@@ -22,65 +22,70 @@
 	if ($loggedin){
 		$staff = $_SESSION['is_staff'];
 	}
+	$profile = false;
+	if ($_SESSION['user_id'] === $_REQUEST['user_id']){
+		$profile = true;
+	}
+	//Must be staff or user's profile
+	if ($staff == 0 && !$profile){
+		$_SESSION['error'] = "Access denied";
+		header("Location: ../index.php");
+		return;
+	}
+	
 	$book = getBook($pdo, $_REQUEST['book_id']);
 	if ($book === false){
 		$_SESSION['error'] = "Could not load book";
 		header("Location: view.php?book_id=".$_REQUEST['book_id']);
 		return;
 	}
-	$author_list_start = explode(";", $book['Authors']);
-	$author_id_list = explode(",", $book['Author_ids']);
-	$author_translator_list = array();
-	$author_list = array();
-	foreach($author_list_start as $au){
-		$one = explode(":", $au);
-		array_push($author_translator_list, $one[1]);
-		array_push($author_list, $one[0]);
-	}
 	$date = new DateTime();
-	$date->modify('+3 day');
 	$date->setTimezone(new DateTimeZone('America/New_York'));
+	$start = date_format($date, "Y-m-d H:i:s");
+	$date->modify('+3 day');
 	$time = date_format($date, "Y-m-d H:i:s");
 
 	$is_available = true;
 	if (htmlentities($book['available_copies']) < 1){
 		$is_available = false;
 	} 
-
+	$have_hold = false;
+	$stmt = $pdo->prepare('SELECT * FROM Hold WHERE user_id=:uid AND book_id=:bid AND end_time >= :et');
+	$stmt->execute(array(
+		':uid' => $_SESSION['user_id'],
+		':bid' => $_REQUEST['book_id'], 
+		':et' => $start
+	));
+	$hold = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	if (count($hold) >0){
+		$have_hold = true;
+	}
 	if (isset($_POST['submit'])){
 		//Check if the book is available 
-		if (htmlentities($book['available_copies']) < 1){
+		if (!$is_available){
 			$_SESSION['error'] = "Unable to place hold. There are no copies currently available.";
 			header("Location: view.php?book_id=".htmlentities($_REQUEST['book_id']));
 			return;
 		} 
 		//Check that user doesn't already have a hold on the book
-		$stmt = $pdo->prepare('SELECT * FROM Hold WHERE user_id=:uid AND book_id=:bid');
-		$stmt->execute(array(
-			':uid' => $_SESSION['user_id'],
-			':bid' => $_POST['book_id']
-		));
-		$hold = $stmt->fetch(PDO::FETCH_ASSOC);
-		if ($hold !== false){
+		if ($have_hold){
 			$_SESSION['error'] = "You already have a hold on this book";
 			header("Location: ../index.php");
 			return;
 		}
-		$stmt = $pdo->prepare('INSERT INTO Hold (end_time, book_id, user_id) VALUES (:et, :bid, :uid)');
+		$stmt = $pdo->prepare('INSERT INTO Hold (start_time, end_time, book_id, user_id) VALUES (:st, :et, :bid, :uid)');
 		$stmt->execute(array(
+			':st' => $start,
 			':et' => $time, 
 			':bid' => $_POST['book_id'],
 			':uid' => $_SESSION['user_id']
 		));
 		$copies = htmlentities($book['available_copies']) - 1;
 		//Update available copies for Book
-		$stmt = $pdo->prepare('UPDATE Book SET available_copies=:ac WHERE book_id=:bid');
-		$stmt->execute(array(
-			':ac' => $copies, 
-			':bid' => $_REQUEST['book_id']
-		));
+		updateAvailableCopies($pdo, $copies, $_REQUEST['book_id']);
+
 		$_SESSION['success'] = "Hold placed successfully";
-		header("Location: ../index.php");
+		header("Location: ../members/profile.php?user_id=".$_SESSION['user_id']);
 		return;
 	}
 
@@ -103,7 +108,7 @@
 						echo('<a href="../members/member-add.php">Add Member</a>');
 						echo('<a href="../members.php">Members</a>');
 					}
-					echo('<a href="../members/members-edit.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
+					echo('<a href="../members/profile.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
 					echo('<a href="../logout.php">Log Out</a>');
 				}
 				else{
@@ -115,31 +120,19 @@
 		</ul>
 		<h1>Place Hold</h1>
 		<?php 
-			flashMessages();
+			flashMessagesCenter();
 		?>
 		<p style="font-size:1.2em; text-align:center; margin-top:80px;">
 			<?php 
-				echo("<i>");
-				echo htmlentities($book['title']);
-				echo(" </i>- ");
-
-				$index = 0;
-				foreach($author_list as $author){
-					$name = explode(",", $author);
-					$fname = htmlentities($name[1]);
-					$lname = htmlentities($name[0]);
-					echo($fname." ".$lname);
-					if ($author_translator_list[$index] == 1){
-						echo " (Translator)";
-					}
-					if ($index + 1 < count($author_list)){
-						echo(" and ");
-					}
-					$index++;
-				}
+				echo listBookandAuthor($pdo, $_REQUEST['book_id']);
 			?> 
 		</p>
 		<br>
+		<?php 
+			if ($have_hold){
+				echo("<p style='text-align:center;'>You already have a hold on this book</p>");
+			}
+		?>
 		<div style="border:solid 1px black; width:40%; margin:auto; padding:30px; margin-top:25px; text-align:center;">
 		<?php
 			//If not avaialable 
@@ -148,7 +141,7 @@
 				echo("Please check later.</p>");
 			}
 			else{
-				echo('<p style="text-align:center;"><strong>Note: </strong>Once confirmed, you will have <strong>3</strong> days to pick it up.</p>');
+				echo('<p style="text-align:center;"><strong>Note: </strong>Once confirmed, you will have <strong>3 days</strong> to pick it up.</p>');
 				echo('<form method="POST" style="text-align:center;">');
 				echo('<p>Expires: <strong>'.date_format($date, "l, m-d-Y g:i A (T)").'</strong></p>');
 				echo('<input type="hidden" name="book_id" value="'.htmlentities($_REQUEST['book_id']).'">');

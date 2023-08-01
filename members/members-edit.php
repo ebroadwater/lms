@@ -50,11 +50,12 @@
 		return;
 	}
 	if (isset($_POST['save']) && isset($_REQUEST['user_id'])){
-		$stmt = $pdo->prepare('UPDATE users SET first_name=:fn, last_name=:ln, email=:em WHERE user_id=:uid');
+		$stmt = $pdo->prepare('UPDATE users SET first_name=:fn, last_name=:ln, email=:em, charges=:ch WHERE user_id=:uid');
 		$stmt->execute(array(
 			':fn' => $_POST['first_name'], 
 			':ln' => $_POST['last_name'], 
 			':em' => $_POST['email'], 
+			':ch' => $_POST['charges'],
 			':uid' => $_REQUEST['user_id']
 		));
 		if (isset($_POST['role'])){
@@ -157,6 +158,9 @@
 							echo("checked>");
 						}
 						echo("<label for='librarian'>Librarian</label>");
+
+						echo("<br><br><strong>Charges: </strong>");
+						echo('<input type="number" name="charges" id="edit_charges" step="0.01" value="'.number_format(htmlentities($row['charges']), 2).'">');
 					}
 				?>
 				<p>
@@ -172,8 +176,10 @@
 					fname = document.getElementById('edit_fname').value;
 					lname = document.getElementById('edit_lname').value;
 					em = document.getElementById('edit_email').value;
+					ch = document.getElementById('edit_charges').value;
 
-					if (fname == null || fname == "" || lname == null || lname == "" || em == null || em == ""){
+					if (fname == null || fname == "" || lname == null || lname == "" || em == null || em == ""
+						|| ch == null || ch == ""){
 						alert("All fields are required");
 						return false;
 					}

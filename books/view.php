@@ -38,7 +38,7 @@
 						echo('<a href="../members/member-add.php">Add Member</a>');
 						echo('<a href="../members.php">Members</a>');
 					}
-					echo('<a href="../members/members-edit.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
+					echo('<a href="../members/profile.php?user_id='.$_SESSION['user_id'].'">Profile</a>');
 					echo('<a href="../logout.php">Log Out</a>');
 				}
 				else{
@@ -105,7 +105,9 @@
 			<form method="GET" action="checkout.php">
 				<input type="submit" value="Check Out" name="checkout">
 				<input type="hidden" value="<?php echo htmlentities($book['book_id'])?>" name="book_id">
+				<input type="hidden" value="<?php echo $_SESSION['user_id'];?>" name="user_id">
 			</form>
+			<!-- ADD RENEW OPTION -->
 		</p>
 		<?php
 			echo("<p><a href='".$back."'>Go Back</a></p>");

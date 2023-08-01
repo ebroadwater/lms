@@ -42,13 +42,25 @@
 			return;
 		}
 	}
-	//Get items on hold
-	$stmt = $pdo->prepare('SELECT * FROM Hold WHERE user_id=:uid');
+	$_SESSION['from'] = "../members/profile.php?user_id=".htmlentities($_REQUEST['user_id']);
+	$date = new DateTime();
+	$date->setTimezone(new DateTimeZone('America/New_York'));
+	$start = date_format($date, "Y-m-d H:i:s");
+
+	//Get items on hold - not-expired
+	$stmt = $pdo->prepare('SELECT * FROM Hold WHERE user_id=:uid AND end_time >= :et');
 	$stmt->execute(array(
-		':uid' => $_REQUEST['user_id']
+		':uid' => $_REQUEST['user_id'], 
+		':et' => $start
 	));
 	$hold_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+	//Get items checked out 
+	$stmt = $pdo->prepare('SELECT * FROM Checkout WHERE user_id=:uid AND is_returned=0');
+	$stmt->execute(array(
+		':uid' => $_REQUEST['user_id']
+	));
+	$checkout_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html>
@@ -85,60 +97,106 @@
 				echo("<h1>".htmlentities($user['first_name'])." ".htmlentities($user['last_name'])."</h1>");
 			}
 		?>
+		<?php 
+			flashMessagesCenter();
+		?>
 		<form method="GET" action="members-edit.php">
-			<input type="submit" value="Edit Profile" name="edit_profile">
+			<input type="submit" value="Edit Profile" name="edit_profile" class="button" style="width:100px;">
 			<input type="hidden" value="<?php echo $_REQUEST['user_id']?>" name="user_id">
 		</form>
 		<h3>Items Checked Out</h3>
-		<div>
+		<div style="border:solid 1px #3B3923; display:flex; flex-direction:column; padding:10px;">
+			<?php
+				if ($checkout_list === false || count($checkout_list) < 1){
+					echo("<p>None</p>");
+				} 
+				else{
+					foreach($checkout_list as $check){
+						echo("<div style='border-bottom:solid 1px #3B3923;display:flex; padding:10px;'>");
+						echo("<div style='display:flex; flex-direction:column;'>");
+						$book = getBook($pdo, htmlentities($check['book_id']));
+						if ($book === false){
+							$_SESSION['error'] = "Could not load book";
+							header("Location: ".$_SERVER['REQUEST_URI']);
+							return;
+						}
+						listInfo($book);
+						$exp = strtotime(htmlentities($check['end_time']));
+						$new_format = date("l, m-d-Y g:i A", $exp);
+						echo("<p><strong>Due Date: </strong>".$new_format);
 
+						if ($check['end_time'] < $start && $check['is_returned'] == 0){
+							echo("<span style='color:red; margin-left:18px;'>Overdue</span");
+						}
+						echo("</p>");
+						echo("<div style='display:inline-flex; gap:10px;'><form method='GET' action='../books/return.php'>");
+						echo("<input type='submit' value='Return' name='return' class='button' style='width:80px;'>");
+						echo("<input type='hidden' value='".$_REQUEST['user_id']."' name='user_id'>");
+						echo("<input type='hidden' value='".htmlentities($book['book_id'])."' name='book_id'>");
+						echo("</form>");
+		
+						echo("<form method='GET' action='../books/renew.php'>");
+						echo("<input type='submit' value='Renew' name='renew' class='button' style='width:80px;'>");
+						echo("<input type='hidden' value='".$_REQUEST['user_id']."' name='user_id'>");
+						echo("<input type='hidden' value='".htmlentities($book['book_id'])."' name='book_id'>");
+						echo("</form></div>");
+						echo("</div>");
+						echo("</div>");
+						// echo("</div>");
+					}
+				}
+			?>
 		</div>
 		<h3>Items on Hold</h3>
-		<div style="border:solid 1px black; display:flex; flex-direction:column;">
+		<div style="border:solid 1px black; display:flex; flex-direction:column; padding:10px;">
 			<?php
 				if ($hold_list === false || count($hold_list) < 1){
 					echo("<p>None</p>");
 				} 
 				else{
 					foreach($hold_list as $hold){
-						echo("<div style='border:solid 1px black; display:flex; padding:10px;'>");
+						echo("<div style='border-bottom:solid 1px #3B3923; display:flex; padding:10px;'>");
+						echo("<div style='display:flex; flex-direction:column;'>");
 						$book = getBook($pdo, htmlentities($hold['book_id']));
 						if ($book === false){
 							$_SESSION['error'] = "Could not load book";
 							header("Location: ".$_SERVER['REQUEST_URI']);
 							return;
 						}
-						$author_list_start = explode(";", $book['Authors']);
-						$author_id_list = explode(",", $book['Author_ids']);
-						$author_translator_list = array();
-						$author_list = array();
-						foreach($author_list_start as $au){
-							$one = explode(":", $au);
-							array_push($author_translator_list, $one[1]);
-							array_push($author_list, $one[0]);
-						}
-						echo("<p>".htmlentities($book['title'])." - ");
-						$index = 0;
-						foreach($author_list as $author){
-							$name = explode(",", $author);
-							$fname = htmlentities($name[1]);
-							$lname = htmlentities($name[0]);
-							echo($fname." ".$lname);
-							if ($author_translator_list[$index] == 1){
-								echo " (Translator)";
-							}
-							if ($index + 1 < count($author_list)){
-								echo(" and ");
-							}
-							$index++;
-						}
+						listInfo($book);
 						$exp = strtotime(htmlentities($hold['end_time']));
 						$new_format = date("l, m-d-Y g:i A", $exp);
-						echo("<br><br><strong>Expires: </strong>".$new_format."</p>");
+						echo("<p><strong>Expires: </strong>".$new_format."</p>");
+						echo("<form method='GET' action='../books/checkout.php'>");
+						echo("<input type='submit' value='Check Out' name='checkout' class='button' style='width:80px;'>");
+						echo("<input type='hidden' value='".$_REQUEST['user_id']."' name='user_id'>");
+						echo("<input type='hidden' value='".htmlentities($book['book_id'])."' name='book_id'>");
+						echo("</form>");
 						echo("</div>");
-						}
+						echo("</div>");
 					}
+				}
 			?>
 		</div>
+		<h3>Bill</h3>
+		<div style="border:solid 1px black; display:flex; flex-direction:column; padding:10px;">
+			<?php 
+				$stmt = $pdo->prepare('SELECT charges FROM users WHERE user_id=:uid');
+				$stmt->execute(array(
+					':uid' => $_REQUEST['user_id']
+				));
+				$bill = $stmt->fetch(PDO::FETCH_ASSOC);
+				echo ("$".number_format(htmlentities($bill['charges']), 2));
+			?>
+		</div>
+		<script>
+			user_id = <?= $_REQUEST['user_id'] ?>;
+			window.onload = updateUserCharges();
+			function updateUserCharges(){
+				const xmlhttp = new XMLHttpRequest();
+				xmlhttp.open("POST", "member-charges.php?user_id=" + user_id);
+				xmlhttp.send();
+			}
+		</script>
 	</body>
 </html>
